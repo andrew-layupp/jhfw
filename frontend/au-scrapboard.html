@@ -466,22 +466,6 @@ function renderFactorResult(factor) {
   body.innerHTML = html;
 }
 
-async function fetchFactor(id) {
-  try {
-    const resp = await fetch(`${BACKEND_URL}/api/au/scrapboard/${id}`);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    return await resp.json();
-  } catch (e1) {
-    try {
-      const resp = await fetch(`${LOCAL_URL}/api/au/scrapboard/${id}`);
-      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-      return await resp.json();
-    } catch (e2) {
-      return { id, label: FACTOR_LABELS[id], articles: [], error: e2.message };
-    }
-  }
-}
-
 async function loadScrapboard() {
   const btn = document.getElementById('refresh-btn');
   const loading = document.getElementById('loading');
@@ -495,24 +479,33 @@ async function loadScrapboard() {
   renderPlaceholders();
   loading.style.display = 'none';
 
-  // Load all factors in parallel — each one updates as it arrives
-  let completed = 0;
-  const promises = FACTOR_IDS.map(async (id) => {
-    const result = await fetchFactor(id);
-    renderFactorResult(result);
-    completed++;
-    document.getElementById('last-updated').textContent =
-      `Loading... ${completed}/${FACTOR_IDS.length} factors complete`;
-  });
+  try {
+    // Read from the cached endpoint (instant, refreshed every 6h in background)
+    const resp = await fetch(`${BACKEND_URL}/api/au/news`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
 
-  await Promise.all(promises);
+    data.forEach(factor => renderFactorResult(factor));
 
-  document.getElementById('last-updated').textContent =
-    'Last updated: ' + new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) +
-    ' AEST \u00b7 ' + new Date().toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
-
-  btn.classList.remove('loading');
-  btn.disabled = false;
+    const updatedAt = data[0]?.updated_at;
+    if (updatedAt) {
+      const d = new Date(updatedAt + 'Z');
+      const ago = Math.round((Date.now() - d.getTime()) / 3600000);
+      document.getElementById('last-updated').textContent =
+        `Last refreshed: ${ago < 1 ? 'just now' : ago + 'h ago'} · ` +
+        d.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) +
+        ' AEST · ' + d.toLocaleDateString('en-AU', {day:'numeric', month:'short', year:'numeric'});
+    } else {
+      document.getElementById('last-updated').textContent =
+        'Last updated: ' + new Date().toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) + ' AEST';
+    }
+  } catch (e) {
+    console.error('Scrapboard load failed:', e);
+    document.getElementById('last-updated').textContent = 'Failed to load: ' + e.message;
+  } finally {
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
 }
 
 // Auto-load on page load
