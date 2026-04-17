@@ -141,19 +141,27 @@ def get_latest() -> Optional[dict]:
     if not item:
         return None
 
-    # Recent signals — scan all, sort by ts desc, take 10
+    # Recent signals — scan all, sort by ts desc, deduplicate by text prefix
     sig_items = _scan_all(_signals())
     sig_items.sort(key=lambda x: x.get("ts", ""), reverse=True)
-    sigs = [
-        {
+    import re
+    seen = set()
+    sigs = []
+    for s in sig_items:
+        # Deduplicate: strip numbers/punctuation so "Gold up 45.4%" and "Gold up 45.5%" match
+        key = re.sub(r'[\d,.$%+\-]+', '', s.get("text", ""))[:40]
+        if key in seen:
+            continue
+        seen.add(key)
+        sigs.append({
             "text":     s.get("text", ""),
             "category": s.get("category"),
             "source":   s.get("source"),
             "url":      s.get("url"),
             "ts":       s.get("ts", ""),
-        }
-        for s in sig_items[:10]
-    ]
+        })
+        if len(sigs) >= 12:
+            break
 
     return _item_to_dict(item, sigs)
 
