@@ -263,6 +263,258 @@
     gap: 8px;
   }
 
+  /* Poll modal */
+  .poll-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .poll-overlay.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .poll-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    max-width: 480px;
+    width: 90vw;
+    position: relative;
+    transform: translateY(20px) scale(0.96);
+    transition: transform 0.3s ease;
+  }
+  .poll-overlay.visible .poll-modal {
+    transform: translateY(0) scale(1);
+  }
+  .poll-close {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .poll-close:hover { color: var(--text); }
+  .poll-title {
+    font-size: clamp(22px, 5vw, 32px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .poll-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+  .poll-buttons {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .poll-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+  .poll-btn:hover {
+    transform: scale(1.15);
+    border-color: #555;
+    box-shadow: 0 0 12px rgba(255,255,255,0.06);
+  }
+  .poll-btn[data-color="green"]       { border-color: #28906a55; }
+  .poll-btn[data-color="green"]:hover  { background: #28906a33; border-color: #28906a; }
+  .poll-btn[data-color="lightgreen"]       { border-color: #40a06055; }
+  .poll-btn[data-color="lightgreen"]:hover { background: #40a06033; border-color: #40a060; }
+  .poll-btn[data-color="orange"]       { border-color: #f0902055; }
+  .poll-btn[data-color="orange"]:hover { background: #f0902033; border-color: #f09020; }
+  .poll-btn[data-color="red"]       { border-color: #e8404055; }
+  .poll-btn[data-color="red"]:hover { background: #e8404033; border-color: #e84040; }
+  .poll-btn[data-color="darkred"]       { border-color: #8b1a1a55; }
+  .poll-btn[data-color="darkred"]:hover { background: #8b1a1a33; border-color: #8b1a1a; }
+  .poll-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: -10px;
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
+  .poll-labels span {
+    font-size: 9px;
+    color: var(--dim);
+  }
+  .poll-thanks {
+    text-align: center;
+    padding: 12px 0 8px;
+  }
+  .poll-thanks h3 {
+    font-size: 28px;
+    color: var(--text);
+    margin-bottom: 16px;
+  }
+  .poll-results-bar-wrap {
+    margin-bottom: 8px;
+  }
+  .poll-results-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+  .poll-results-num {
+    font-size: 11px;
+    color: var(--muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .poll-results-track {
+    flex: 1;
+    height: 14px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .poll-results-fill {
+    height: 100%;
+    border-radius: 4px;
+    width: 0;
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .poll-results-pct {
+    font-size: 10px;
+    color: var(--dim);
+    width: 32px;
+    flex-shrink: 0;
+  }
+  .poll-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin: 14px 0 8px;
+  }
+  .poll-stat-val {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .poll-stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .poll-close-btn {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 8px 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .poll-close-btn:hover {
+    border-color: #555;
+    background: #252525;
+  }
+
+  /* Community pulse section */
+  .pulse-section {
+    margin-bottom: 24px;
+  }
+  .pulse-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .pulse-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pulse-stats {
+    display: flex;
+    gap: 20px;
+  }
+  .pulse-stat-val {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .pulse-stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .pulse-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .pulse-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .pulse-bar-num {
+    font-size: 11px;
+    color: var(--muted);
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .pulse-bar-track {
+    flex: 1;
+    height: 12px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .pulse-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    width: 0;
+    transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pulse-bar-pct {
+    font-size: 10px;
+    color: var(--dim);
+    width: 32px;
+    flex-shrink: 0;
+  }
+
   /* Scanline overlay */
   body::after {
     content: '';
@@ -281,6 +533,39 @@
 </style>
 </head>
 <body>
+
+<!-- Poll Modal -->
+<div class="poll-overlay" id="poll-overlay">
+  <div class="poll-modal">
+    <button class="poll-close" id="poll-close-x" aria-label="Close">&times;</button>
+    <div id="poll-vote-view">
+      <div class="bbn poll-title">How fucked do you think we are?</div>
+      <div class="mono poll-subtitle">Rate the current state of the world</div>
+      <div class="poll-buttons" id="poll-buttons"></div>
+      <div class="poll-labels">
+        <span>We're fine</span>
+        <span>Cooked</span>
+      </div>
+    </div>
+    <div id="poll-results-view" style="display:none">
+      <div class="poll-thanks">
+        <h3 class="bbn">Thanks!</h3>
+        <div class="poll-results-bar-wrap" id="poll-results-bars"></div>
+        <div class="poll-stats">
+          <div style="text-align:center">
+            <div class="poll-stat-val mono" id="poll-avg">--</div>
+            <div class="poll-stat-label">avg score</div>
+          </div>
+          <div style="text-align:center">
+            <div class="poll-stat-val mono" id="poll-total">--</div>
+            <div class="poll-stat-label">total votes</div>
+          </div>
+        </div>
+        <button class="poll-close-btn" id="poll-close-btn">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="container">
 
@@ -367,6 +652,27 @@
     <div class="section-label mono" style="margin:0">Live signals</div>
   </div>
   <div class="signals-wrap" id="signals-list"></div>
+
+  <!-- Community Pulse -->
+  <div class="pulse-section" id="pulse-section" style="display:none">
+    <div class="section-label mono">community pulse</div>
+    <div class="pulse-card">
+      <div class="pulse-header">
+        <div class="pulse-stats">
+          <div style="text-align:center">
+            <div class="pulse-stat-val mono" id="pulse-avg">--</div>
+            <div class="pulse-stat-label">avg score</div>
+          </div>
+          <div style="text-align:center">
+            <div class="pulse-stat-val mono" id="pulse-total" style="color:var(--text)">--</div>
+            <div class="pulse-stat-label">total votes</div>
+          </div>
+        </div>
+        <div class="mono" style="font-size:10px;color:var(--dim)">How fucked do people think we are?</div>
+      </div>
+      <div class="pulse-bars" id="pulse-bars"></div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <div class="footer">
@@ -804,6 +1110,153 @@ DATA.signals.forEach((sig, i) => {
     <span class="signal-text">${textHtml}</span>`;
   sigList.appendChild(row);
 });
+
+// ── POLL SYSTEM ───────────────────────────────────────────────────────────
+
+const POLL_COLORS = {
+  1: '#28906a', 2: '#28906a',
+  3: '#40a060', 4: '#40a060',
+  5: '#f09020', 6: '#f09020',
+  7: '#e84040', 8: '#e84040',
+  9: '#8b1a1a', 10: '#8b1a1a',
+};
+const POLL_COLOR_NAMES = {
+  1: 'green', 2: 'green',
+  3: 'lightgreen', 4: 'lightgreen',
+  5: 'orange', 6: 'orange',
+  7: 'red', 8: 'red',
+  9: 'darkred', 10: 'darkred',
+};
+
+// Build poll buttons
+const pollBtnsWrap = document.getElementById('poll-buttons');
+for (let i = 1; i <= 10; i++) {
+  const btn = document.createElement('button');
+  btn.className = 'poll-btn';
+  btn.textContent = i;
+  btn.dataset.score = i;
+  btn.dataset.color = POLL_COLOR_NAMES[i];
+  btn.addEventListener('click', () => submitPollVote(i));
+  pollBtnsWrap.appendChild(btn);
+}
+
+// Render distribution bars into a container
+function renderPollBars(containerId, distribution, prefix) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const dist = distribution || {};
+  let maxCount = 0;
+  for (let i = 1; i <= 10; i++) maxCount = Math.max(maxCount, dist[i] || 0);
+  container.innerHTML = '';
+  for (let i = 1; i <= 10; i++) {
+    const count = dist[i] || 0;
+    const pct = maxCount > 0 ? (count / maxCount) * 100 : 0;
+    const row = document.createElement('div');
+    row.className = prefix + '-bar-row';
+    row.innerHTML = `
+      <span class="${prefix}-bar-num mono">${i}</span>
+      <div class="${prefix}-bar-track">
+        <div class="${prefix}-bar-fill" style="background:${POLL_COLORS[i]}"></div>
+      </div>
+      <span class="${prefix}-bar-pct mono">${count}</span>`;
+    container.appendChild(row);
+    // Animate bar after append
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        row.querySelector(`.${prefix}-bar-fill`).style.width = pct + '%';
+      });
+    });
+  }
+}
+
+// Update pulse section with poll data
+function updatePulseSection(data) {
+  const section = document.getElementById('pulse-section');
+  if (!data || !data.total || data.total === 0) {
+    section.style.display = 'none';
+    return;
+  }
+  section.style.display = '';
+  const avg = document.getElementById('pulse-avg');
+  const total = document.getElementById('pulse-total');
+  avg.textContent = data.average.toFixed(1);
+  avg.style.color = POLL_COLORS[Math.min(10, Math.max(1, Math.round(data.average)))];
+  total.textContent = data.total.toLocaleString();
+  renderPollBars('pulse-bars', data.distribution, 'pulse');
+}
+
+// Fetch poll results
+async function fetchPollResults() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/poll`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    return data;
+  } catch (e) {
+    console.warn('Poll results unavailable:', e.message);
+    return null;
+  }
+}
+
+// Show poll results in modal
+function showPollResults(data) {
+  document.getElementById('poll-vote-view').style.display = 'none';
+  const rv = document.getElementById('poll-results-view');
+  rv.style.display = '';
+  if (data && data.total > 0) {
+    document.getElementById('poll-avg').textContent = data.average.toFixed(1);
+    document.getElementById('poll-avg').style.color = POLL_COLORS[Math.min(10, Math.max(1, Math.round(data.average)))];
+    document.getElementById('poll-total').textContent = data.total.toLocaleString();
+    renderPollBars('poll-results-bars', data.distribution, 'poll-results');
+  }
+}
+
+// Submit vote
+async function submitPollVote(score) {
+  // Disable buttons
+  pollBtnsWrap.querySelectorAll('.poll-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+
+  try {
+    await fetch(`${BACKEND_URL}/api/poll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score }),
+    });
+  } catch (e) {
+    console.warn('Poll submit failed:', e.message);
+  }
+
+  sessionStorage.setItem('jhfw_voted', '1');
+
+  const data = await fetchPollResults();
+  showPollResults(data);
+  if (data) updatePulseSection(data);
+}
+
+// Poll overlay controls
+const pollOverlay = document.getElementById('poll-overlay');
+function closePoll() {
+  pollOverlay.classList.remove('visible');
+  sessionStorage.setItem('jhfw_voted', '1');
+}
+document.getElementById('poll-close-x').addEventListener('click', closePoll);
+document.getElementById('poll-close-btn').addEventListener('click', closePoll);
+pollOverlay.addEventListener('click', (e) => {
+  if (e.target === pollOverlay) closePoll();
+});
+
+// Show poll after 3s if not voted
+if (!sessionStorage.getItem('jhfw_voted')) {
+  setTimeout(() => {
+    pollOverlay.classList.add('visible');
+  }, 3000);
+}
+
+// Load community pulse on page load
+(async () => {
+  const data = await fetchPollResults();
+  if (data) updatePulseSection(data);
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 </body>

@@ -8,9 +8,10 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 import database as db
@@ -70,7 +71,7 @@ app = FastAPI(title="Just How Fucked Are We — API", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],   # lock down to your domain in production
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -95,6 +96,26 @@ async def current():
 async def history(days: int = Query(default=180, ge=7, le=730)):
     rows = await db.get_history(days=days)
     return JSONResponse(rows)
+
+
+class PollVote(BaseModel):
+    score: int = Field(..., ge=1, le=10)
+
+
+@app.post("/api/poll")
+async def submit_poll(vote: PollVote, request: Request):
+    ip_hash = None
+    if request.client:
+        import hashlib
+        ip_hash = hashlib.sha256(request.client.host.encode()).hexdigest()[:16]
+    await db.insert_poll_vote(vote.score, ip_hash)
+    return {"status": "ok"}
+
+
+@app.get("/api/poll")
+async def poll_results():
+    results = await db.get_poll_results()
+    return JSONResponse(results)
 
 
 @app.get("/api/refresh")

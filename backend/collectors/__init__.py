@@ -7,6 +7,7 @@ import logging
 from .markets import fetch_markets
 from .climate import fetch_climate
 from .news    import fetch_news
+from .fred    import fetch_fred
 
 log = logging.getLogger(__name__)
 
@@ -19,10 +20,11 @@ async def collect_all() -> dict:
         fetch_markets(),
         fetch_climate(),
         fetch_news(),
+        fetch_fred(),
         return_exceptions=True,
     )
 
-    markets_data, climate_data, news_data = results
+    markets_data, climate_data, news_data, fred_data = results
 
     if isinstance(markets_data, Exception):
         log.error("Markets collector failed: %s", markets_data)
@@ -33,9 +35,13 @@ async def collect_all() -> dict:
     if isinstance(news_data, Exception):
         log.error("News collector failed: %s", news_data)
         news_data = {}
+    if isinstance(fred_data, Exception):
+        log.error("FRED collector failed: %s", fred_data)
+        fred_data = {}
 
     return {
         "markets": markets_data,
         "climate": climate_data,
         "news":    news_data,
+        "fred":    fred_data,
     }

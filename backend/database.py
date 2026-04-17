@@ -33,8 +33,16 @@ CREATE TABLE IF NOT EXISTS signals (
     url       TEXT
 );
 
+CREATE TABLE IF NOT EXISTS poll_votes (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts        TEXT NOT NULL,
+    score     INTEGER NOT NULL,
+    ip_hash   TEXT
+);
+
 CREATE INDEX IF NOT EXISTS idx_snapshots_ts ON snapshots(ts);
 CREATE INDEX IF NOT EXISTS idx_signals_ts   ON signals(ts);
+CREATE INDEX IF NOT EXISTS idx_poll_ts      ON poll_votes(ts);
 """
 
 
@@ -137,6 +145,33 @@ async def count_snapshots() -> int:
         async with db.execute("SELECT COUNT(*) FROM snapshots") as cur:
             row = await cur.fetchone()
     return row[0] if row else 0
+
+
+async def insert_poll_vote(score: int, ip_hash: str = None):
+    """Insert a user poll vote (score 1-10)."""
+    ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            "INSERT INTO poll_votes (ts, score, ip_hash) VALUES (?, ?, ?)",
+            (ts, score, ip_hash),
+        )
+        await db.commit()
+
+
+async def get_poll_results() -> dict:
+    """Return aggregate poll results: total votes, average, and distribution."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute("SELECT score, COUNT(*) as cnt FROM poll_votes GROUP BY score") as cur:
+            rows = await cur.fetchall()
+    distribution = {i: 0 for i in range(1, 11)}
+    total = 0
+    weighted_sum = 0
+    for score_val, cnt in rows:
+        distribution[score_val] = cnt
+        total += cnt
+        weighted_sum += score_val * cnt
+    average = round(weighted_sum / total, 2) if total > 0 else 0.0
+    return {"total_votes": total, "average": average, "distribution": distribution}
 
 
 def _row_to_dict(row, signals=None) -> dict:

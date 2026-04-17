@@ -14,6 +14,8 @@ TICKERS = {
     "oil":    "BZ=F",
     "audusd": "AUDUSD=X",
     "dxy":    "DX-Y.NYB",
+    "btc":    "BTC-USD",
+    "tnx":    "^TNX",
 }
 
 
