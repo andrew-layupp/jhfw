@@ -406,7 +406,7 @@
 
   .sub-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 32px;
   }
@@ -1279,7 +1279,7 @@ function renderSignalCards(signals, containerId, limit) {
       el.rel = 'noopener';
     }
     el.innerHTML = `
-      <span class="signal-card-text">${sig.text}</span>
+      <span class="signal-card-text">${sig.url ? `<a href="${sig.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--dim)">${sig.text}</a>` : sig.text}</span>
       <div class="signal-card-meta">
         <span class="badge badge-source mono">${src}</span>
         <span class="badge badge-cat-${cat} mono">${cat}</span>
@@ -1303,7 +1303,7 @@ function renderSidebarSignals(signals) {
       el.rel = 'noopener';
     }
     el.innerHTML = `
-      <span class="sidebar-signal-text">${sig.text}</span>
+      <span class="sidebar-signal-text">${sig.url ? `<a href="${sig.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--dim)">${sig.text}</a>` : sig.text}</span>
       <div class="sidebar-signal-meta">
         <span class="badge badge-source mono">${src}</span>
         <span class="badge badge-cat-${cat} mono">${cat}</span>

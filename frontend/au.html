@@ -349,7 +349,8 @@
     font-size: 10px; font-weight: 600; text-transform: uppercase;
     letter-spacing: 0.14em; color: var(--muted); margin-bottom: 12px;
   }
-  .sub-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 32px; }
+  .sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 32px; }
+  @media (max-width: 640px) { .sub-grid { grid-template-columns: repeat(2, 1fr); } }
   .sub-card {
     background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
     padding: 16px 12px 14px; text-align: center;
@@ -614,15 +615,6 @@
       <div class="methodology-section fade-in-section">
         <div class="section-label mono">How we calculate this</div>
         <div class="methodology-card" id="methodology-card"></div>
-      </div>
-
-      <!-- Live signals (main, prominent) -->
-      <div class="signals-section fade-in-section">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-          <div class="live-dot" style="width:6px;height:6px"></div>
-          <div class="section-label mono" style="margin:0">AU signals</div>
-        </div>
-        <div id="signals-main"></div>
       </div>
 
       <!-- Share section -->
@@ -958,7 +950,7 @@ function renderSignalCards(signals, containerId, limit) {
     const el = document.createElement('div');
     el.className = 'signal-card';
     el.innerHTML = `
-      <span class="signal-card-text">${sig.text}</span>
+      <span class="signal-card-text">${sig.url ? `<a href="${sig.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--dim)">${sig.text}</a>` : sig.text}</span>
       <div class="signal-card-meta">
         <span class="badge badge-source mono">${src}</span>
         <span class="badge badge-cat-${cat} mono">${cat}</span>
@@ -977,7 +969,7 @@ function renderSidebarSignals(signals) {
     const el = document.createElement('div');
     el.className = 'sidebar-signal';
     el.innerHTML = `
-      <span class="sidebar-signal-text">${sig.text}</span>
+      <span class="sidebar-signal-text">${sig.url ? `<a href="${sig.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--dim)">${sig.text}</a>` : sig.text}</span>
       <div class="sidebar-signal-meta">
         <span class="badge badge-source mono">${src}</span>
         <span class="badge badge-cat-${cat} mono">${cat}</span>
