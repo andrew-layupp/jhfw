@@ -1,0 +1,6 @@
+# Lambda layer dependencies — external packages only.
+# boto3 is pre-installed in the Lambda Python 3.12 runtime.
+# fastapi/uvicorn are NOT needed (Lambda handlers replace the FastAPI server).
+yfinance>=0.2.36
+httpx>=0.27.0
+pandas>=2.2.0

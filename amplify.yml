@@ -1,0 +1,22 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - mkdir -p build
+    build:
+      commands:
+        - cp frontend/index.html build/index.html
+        - |
+          if [ -n "$BACKEND_URL" ]; then
+            echo "Injecting BACKEND_URL: $BACKEND_URL"
+            sed -i "s|http://localhost:8000|${BACKEND_URL}|g" build/index.html
+          else
+            echo "BACKEND_URL not set — frontend will use localhost fallback"
+          fi
+  artifacts:
+    baseDirectory: build
+    files:
+      - '**/*'
+  cache:
+    paths: []

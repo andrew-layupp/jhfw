@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Just How Fucked Are We — Serverless deployment (API Gateway + Lambda + DynamoDB)
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 300
+    MemorySize: 512
+    Environment:
+      Variables:
+        TABLE_PREFIX: jhfw
+        SNAPSHOTS_TABLE: !Ref SnapshotsTable
+        SIGNALS_TABLE: !Ref SignalsTable
+    Layers:
+      - !Ref SharedCodeLayer
+      - !Ref DependencyLayer
+
+Resources:
+
+  # ── API Gateway HTTP API ──────────────────────────────────────────────────────
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Description: JHFW Global Chaos Index API
+      CorsConfiguration:
+        AllowOrigins:
+          - '*'
+        AllowMethods:
+          - GET
+          - OPTIONS
+        AllowHeaders:
+          - '*'
+        MaxAge: 600
+
+  # ── Lambda Functions ──────────────────────────────────────────────────────────
+
+  ApiCurrentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-api-current
+      CodeUri: lambdas/api_current/
+      Handler: handler.lambda_handler
+      Description: GET /api/current — returns latest snapshot + signals from DynamoDB
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SnapshotsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref SignalsTable
+      Events:
+        GetCurrent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/current
+            Method: GET
+
+  ApiHistoryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-api-history
+      CodeUri: lambdas/api_history/
+      Handler: handler.lambda_handler
+      Description: GET /api/history — returns historical snapshots (accepts ?days= param)
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SnapshotsTable
+      Events:
+        GetHistory:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/history
+            Method: GET
+
+  ApiHealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-api-health
+      CodeUri: lambdas/api_health/
+      Handler: handler.lambda_handler
+      Description: GET /api/health — returns status + snapshot count
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SnapshotsTable
+      Events:
+        GetHealth:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/health
+            Method: GET
+
+  CollectorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-collector
+      CodeUri: lambdas/collector/
+      Handler: handler.lambda_handler
+      Description: EventBridge-triggered every 15 min — collects data, scores, stores in DynamoDB
+      Timeout: 900
+      MemorySize: 1024
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SnapshotsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SignalsTable
+      Events:
+        ScheduledCollection:
+          Type: Schedule
+          Properties:
+            Schedule: rate(15 minutes)
+            Description: Collect chaos data every 15 minutes
+            Enabled: true
+
+  SeederFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-seeder
+      CodeUri: lambdas/seeder/
+      Handler: handler.lambda_handler
+      Description: Manually invokable — seeds 6 months of historical data into DynamoDB
+      Timeout: 900
+      MemorySize: 1024
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SnapshotsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SignalsTable
+
+  # ── DynamoDB Tables ───────────────────────────────────────────────────────────
+
+  SnapshotsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jhfw-snapshots
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: ts
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ts
+          KeyType: HASH
+
+  SignalsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jhfw-signals
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: ts
+          AttributeType: S
+        - AttributeName: text
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ts
+          KeyType: HASH
+        - AttributeName: text
+          KeyType: RANGE
+
+  # ── Lambda Layers ─────────────────────────────────────────────────────────────
+
+  SharedCodeLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: jhfw-shared-code
+      Description: Shared Python code — dynamo_db, scorer, collectors
+      ContentUri: lambdas/shared/
+      CompatibleRuntimes:
+        - python3.12
+    Metadata:
+      BuildMethod: makefile
+
+  DependencyLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: jhfw-dependencies
+      Description: Python dependencies — yfinance, pandas, httpx
+      ContentUri: lambdas/deps_layer/
+      CompatibleRuntimes:
+        - python3.12
+    Metadata:
+      BuildMethod: python3.12
+
+# ── Outputs ───────────────────────────────────────────────────────────────────
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL — set as BACKEND_URL in Amplify
+    Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+    Export:
+      Name: JhfwApiUrl
+
+  SnapshotsTableName:
+    Description: DynamoDB snapshots table name
+    Value: !Ref SnapshotsTable
+
+  SignalsTableName:
+    Description: DynamoDB signals table name
+    Value: !Ref SignalsTable
+
+  CollectorFunctionName:
+    Description: Collector Lambda function name (for manual invocation)
+    Value: !Ref CollectorFunction
+
+  SeederFunctionName:
+    Description: Seeder Lambda function name (for manual invocation)
+    Value: !Ref SeederFunction
