@@ -489,10 +489,11 @@ async function loadScrapboard() {
 
   btn.classList.add('loading');
   btn.disabled = true;
-  loading.style.display = 'none';
-  factors.style.display = 'block';
 
+  // Show placeholders immediately
+  factors.style.display = 'block';
   renderPlaceholders();
+  loading.style.display = 'none';
 
   // Load all factors in parallel — each one updates as it arrives
   let completed = 0;
@@ -515,7 +516,17 @@ async function loadScrapboard() {
 }
 
 // Auto-load on page load
-loadScrapboard();
+console.log('[JHFW] Starting scrapboard load...');
+loadScrapboard().then(() => {
+  console.log('[JHFW] Scrapboard load complete');
+}).catch(e => {
+  console.error('[JHFW] Scrapboard load failed:', e);
+  document.getElementById('loading').innerHTML = `
+    <div style="color:var(--red);font-size:16px;margin-bottom:12px">Something went wrong</div>
+    <div class="mono" style="font-size:12px;color:var(--dim)">${e.message || e}</div>
+    <button class="refresh-btn" onclick="location.reload()" style="margin-top:16px">Try again</button>`;
+  document.getElementById('loading').style.display = 'block';
+});
 </script>
 </body>
 </html>
