@@ -6,9 +6,7 @@ frontend:
         - mkdir -p build
     build:
       commands:
-        - cp frontend/index.html build/index.html
-        - cp frontend/au.html build/au.html
-        - cp frontend/us.html build/us.html
+        - cp frontend/*.html build/
         - |
           if [ -n "$BACKEND_URL" ]; then
             echo "Injecting BACKEND_URL: $BACKEND_URL"
