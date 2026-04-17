@@ -415,6 +415,84 @@
   .poll-results-pct { font-size: 10px; color: var(--dim); width: 40px; flex-shrink: 0; }
   .poll-results-total { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
+  /* News section */
+  .news-section { margin-bottom: 32px; }
+  .news-refreshed {
+    font-size: 11px; color: var(--muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .news-refreshed .live-dot { width: 6px; height: 6px; }
+  .news-factor {
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--surface); margin-bottom: 10px; overflow: hidden;
+    border-left: 3px solid var(--dim);
+  }
+  .news-factor[data-factor="housing"] { border-left-color: #ff8c00; }
+  .news-factor[data-factor="cost_of_living"] { border-left-color: #e6c619; }
+  .news-factor[data-factor="jobs"] { border-left-color: #7ab800; }
+  .news-factor[data-factor="ai_jobs"] { border-left-color: #a855f7; }
+  .news-factor[data-factor="climate"] { border-left-color: #00b386; }
+  .news-factor[data-factor="geopolitical"] { border-left-color: #ff3333; }
+  .news-factor[data-factor="markets"] { border-left-color: #00cc66; }
+
+  .news-factor-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px 16px; cursor: pointer; user-select: none;
+    transition: background 0.2s;
+  }
+  .news-factor-header:hover { background: var(--surface2); }
+  .news-factor-icon { font-size: 18px; line-height: 1; }
+  .news-factor-label { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+  .news-factor-count {
+    font-size: 10px; color: var(--muted); background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px; padding: 2px 8px;
+  }
+  .news-factor-chevron {
+    font-size: 12px; color: var(--dim); transition: transform 0.2s;
+  }
+  .news-factor.collapsed .news-factor-chevron { transform: rotate(-90deg); }
+  .news-factor-body { padding: 0 16px 12px; }
+  .news-factor.collapsed .news-factor-body { display: none; }
+
+  .news-article {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; margin-bottom: 8px;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  }
+  .news-article:last-child { margin-bottom: 0; }
+  .news-article:hover { border-color: #444; transform: translateX(2px); box-shadow: 0 4px 16px rgba(0,0,0,0.25); }
+  .news-article-headline {
+    font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.45;
+    margin-bottom: 6px; display: block;
+  }
+  .news-article-headline a {
+    color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--dim);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .news-article-headline a:hover { color: #fff; border-color: var(--muted); }
+  .news-article-summary { font-size: 12px; color: var(--muted); line-height: 1.55; margin-bottom: 8px; }
+  .news-article-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .badge-relevance-high { background: rgba(255,51,51,0.12); color: #ff3333; border: 1px solid rgba(255,51,51,0.25); }
+  .badge-relevance-medium { background: rgba(255,140,0,0.12); color: #ff8c00; border: 1px solid rgba(255,140,0,0.25); }
+  .badge-relevance-low { background: rgba(0,204,102,0.12); color: #00cc66; border: 1px solid rgba(0,204,102,0.25); }
+
+  .news-loading {
+    text-align: center; padding: 32px 16px; color: var(--muted); font-size: 12px;
+  }
+
+  /* Sidebar news article */
+  .sidebar-news-article {
+    display: block; padding: 10px 0; border-bottom: 1px solid var(--border);
+    text-decoration: none; transition: background 0.2s;
+  }
+  .sidebar-news-article:last-child { border-bottom: none; }
+  .sidebar-news-article:hover { background: var(--surface2); margin: 0 -20px; padding: 10px 20px; }
+  .sidebar-news-headline {
+    font-size: 12px; color: var(--text); line-height: 1.45; margin-bottom: 5px; display: block;
+  }
+  .sidebar-news-headline a { color: var(--text); text-decoration: none; border-bottom: 1px dotted var(--dim); }
+  .sidebar-news-headline a:hover { color: #fff; }
+
   /* Methodology */
   .methodology-section { margin-bottom: 32px; }
   .methodology-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
@@ -612,6 +690,18 @@
         <div class="sub-grid" id="sub-grid"></div>
       </div>
 
+      <!-- Latest News -->
+      <div class="news-section fade-in-section" id="news-section">
+        <div class="section-label mono">Latest News</div>
+        <div class="news-refreshed mono" id="news-refreshed">
+          <div class="live-dot"></div>
+          <span>Loading news...</span>
+        </div>
+        <div id="news-factors">
+          <div class="news-loading mono">Fetching latest articles...</div>
+        </div>
+      </div>
+
       <!-- Methodology -->
       <div class="methodology-section fade-in-section">
         <div class="section-label mono">How we calculate this</div>
@@ -662,6 +752,14 @@
             <span class="mono" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">AU signals</span>
           </div>
           <div id="sidebar-signals"></div>
+          <!-- Sidebar news -->
+          <div id="sidebar-news-section" style="display:none">
+            <div class="sidebar-header" style="margin-top:8px">
+              <span style="font-size:14px">📰</span>
+              <span class="mono" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Top news</span>
+            </div>
+            <div id="sidebar-news"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1102,6 +1200,154 @@ async function submitInlinePollVote(level) {
 
   if (sessionStorage.getItem('jhfw_voted')) {
     showPollResults(data);
+  }
+})();
+
+// -- NEWS SECTION --
+const NEWS_FACTOR_ICONS = {
+  housing: '\u{1F3E0}',
+  cost_of_living: '\u{1F4B8}',
+  jobs: '\u{1F477}',
+  ai_jobs: '\u{1F916}',
+  climate: '\u{1F321}\uFE0F',
+  geopolitical: '\u{1F30F}',
+  markets: '\u{1F4C8}',
+};
+
+const NEWS_FACTOR_COLORS = {
+  housing: '#ff8c00',
+  cost_of_living: '#e6c619',
+  jobs: '#7ab800',
+  ai_jobs: '#a855f7',
+  climate: '#00b386',
+  geopolitical: '#ff3333',
+  markets: '#00cc66',
+};
+
+function getRelevanceBadge(score) {
+  if (score >= 7) return { cls: 'badge-relevance-high', label: 'High' };
+  if (score >= 4) return { cls: 'badge-relevance-medium', label: 'Med' };
+  return { cls: 'badge-relevance-low', label: 'Low' };
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  const mins = Math.floor(diff / 60000);
+  if (hours >= 24) return Math.floor(hours / 24) + 'd ago';
+  if (hours >= 1) return hours + 'h ago';
+  if (mins >= 1) return mins + 'm ago';
+  return 'just now';
+}
+
+function renderNewsFactors(factors) {
+  const container = document.getElementById('news-factors');
+  container.innerHTML = '';
+
+  factors.forEach((factor, idx) => {
+    const icon = NEWS_FACTOR_ICONS[factor.id] || '\u{1F4F0}';
+    const isCollapsed = idx >= 3;
+    const el = document.createElement('div');
+    el.className = 'news-factor' + (isCollapsed ? ' collapsed' : '');
+    el.dataset.factor = factor.id;
+
+    const articles = factor.articles || [];
+    let articlesHtml = '';
+    articles.forEach(art => {
+      const rel = getRelevanceBadge(art.relevance_score || 0);
+      const headlineContent = art.url
+        ? `<a href="${art.url}" target="_blank" rel="noopener">${art.headline}</a>`
+        : art.headline;
+      articlesHtml += `
+        <div class="news-article">
+          <span class="news-article-headline">${headlineContent}</span>
+          ${art.summary ? `<div class="news-article-summary">${art.summary}</div>` : ''}
+          <div class="news-article-meta">
+            ${art.source ? `<span class="badge badge-source mono">${art.source}</span>` : ''}
+            <span class="badge ${rel.cls} mono">${rel.label}</span>
+          </div>
+        </div>`;
+    });
+
+    el.innerHTML = `
+      <div class="news-factor-header">
+        <span class="news-factor-icon">${icon}</span>
+        <span class="news-factor-label mono">${factor.label}</span>
+        <span class="news-factor-count mono">${articles.length} article${articles.length !== 1 ? 's' : ''}</span>
+        <span class="news-factor-chevron">\u25BC</span>
+      </div>
+      <div class="news-factor-body">${articlesHtml}</div>`;
+
+    el.querySelector('.news-factor-header').addEventListener('click', () => {
+      el.classList.toggle('collapsed');
+    });
+
+    container.appendChild(el);
+  });
+}
+
+function renderSidebarNews(factors) {
+  const allArticles = [];
+  factors.forEach(factor => {
+    (factor.articles || []).forEach(art => {
+      allArticles.push({ ...art, factorId: factor.id, factorLabel: factor.label });
+    });
+  });
+  allArticles.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
+  const top = allArticles.slice(0, 10);
+
+  if (top.length === 0) return;
+
+  const section = document.getElementById('sidebar-news-section');
+  const container = document.getElementById('sidebar-news');
+  section.style.display = '';
+  container.innerHTML = '';
+
+  top.forEach(art => {
+    const rel = getRelevanceBadge(art.relevance_score || 0);
+    const catKey = art.factorId === 'cost_of_living' ? 'living'
+      : art.factorId === 'ai_jobs' ? 'jobs'
+      : art.factorId === 'geopolitical' ? 'geopolitics'
+      : art.factorId;
+    const el = document.createElement('div');
+    el.className = 'sidebar-news-article';
+    el.innerHTML = `
+      <span class="sidebar-news-headline">${art.url ? `<a href="${art.url}" target="_blank" rel="noopener">${art.headline}</a>` : art.headline}</span>
+      <div class="sidebar-signal-meta">
+        ${art.source ? `<span class="badge badge-source mono">${art.source}</span>` : ''}
+        <span class="badge badge-cat-${catKey} mono">${art.factorLabel}</span>
+        <span class="badge ${rel.cls} mono">${rel.label}</span>
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+(async () => {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/au/news`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const factors = await res.json();
+
+    // Update refreshed timestamp from first factor
+    const refreshedEl = document.getElementById('news-refreshed');
+    const firstUpdated = factors.find(f => f.updated_at)?.updated_at;
+    if (firstUpdated) {
+      refreshedEl.innerHTML = `<div class="live-dot"></div><span>Last refreshed: ${timeAgo(firstUpdated)}</span>`;
+    } else {
+      refreshedEl.innerHTML = `<div class="live-dot"></div><span>Live</span>`;
+    }
+
+    renderNewsFactors(factors);
+    renderSidebarNews(factors);
+
+    // Re-observe for fade-in
+    const newsSection = document.getElementById('news-section');
+    if (newsSection) observer.observe(newsSection);
+  } catch (e) {
+    console.warn('News fetch failed:', e.message);
+    document.getElementById('news-factors').innerHTML =
+      '<div class="news-loading mono" style="color:var(--dim)">News unavailable — check back later</div>';
+    document.getElementById('news-refreshed').innerHTML = '';
   }
 })();
 </script>

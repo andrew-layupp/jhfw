@@ -12,6 +12,7 @@ Globals:
         TABLE_PREFIX: jhfw
         SNAPSHOTS_TABLE: !Ref SnapshotsTable
         SIGNALS_TABLE: !Ref SignalsTable
+        SCRAPBOARD_TABLE: !Ref ScrapboardTable
     Layers:
       - !Ref SharedCodeLayer
       - !Ref DependencyLayer
@@ -151,6 +152,46 @@ Resources:
             Path: /api/au/scrapboard/{factor_id}
             Method: GET
 
+  ScrapboardCacheFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-scrapboard-cache
+      CodeUri: lambdas/au_scrapboard/
+      Handler: handler.cache_handler
+      Description: Scheduled every 6h — runs Claude web search and caches results in DynamoDB
+      Timeout: 900
+      MemorySize: 1024
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ScrapboardTable
+      Events:
+        ScheduledRefresh:
+          Type: Schedule
+          Properties:
+            Schedule: rate(6 hours)
+            Description: Refresh AU scrapboard news cache every 6 hours
+            Enabled: true
+
+  ScrapboardReadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-scrapboard-read
+      CodeUri: lambdas/au_scrapboard/
+      Handler: handler.read_handler
+      Description: GET /api/au/news — reads cached scrapboard from DynamoDB (instant)
+      Timeout: 10
+      MemorySize: 256
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ScrapboardTable
+      Events:
+        GetCachedNews:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/au/news
+            Method: GET
+
   # ── DynamoDB Tables ───────────────────────────────────────────────────────────
 
   SnapshotsTable:
@@ -180,6 +221,18 @@ Resources:
           KeyType: HASH
         - AttributeName: text
           KeyType: RANGE
+
+  ScrapboardTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jhfw-scrapboard
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: factor_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: factor_id
+          KeyType: HASH
 
   # ── Lambda Layers ─────────────────────────────────────────────────────────────
 
