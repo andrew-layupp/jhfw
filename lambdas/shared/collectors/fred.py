@@ -17,6 +17,9 @@ SERIES = {
     "CSUSHPISA": "case_shiller",   # Case-Shiller US National Home Price Index
     "DGS2":      "yield_2y",       # 2-Year Treasury Yield
     "DGS10":     "yield_10y",      # 10-Year Treasury Yield
+    "UNRATE":    "unemployment",   # US Unemployment Rate (monthly)
+    "ICSA":      "jobless_claims", # Initial Jobless Claims (weekly, more timely)
+    "MSPUS":     "median_home_price",  # Median Sales Price of Houses Sold (quarterly)
 }
 
 

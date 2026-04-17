@@ -115,32 +115,48 @@ def score_climate(climate: dict) -> tuple[float, dict]:
     return round(clamp(score), 1), {"anomaly_c": anomaly}
 
 
-def score_living(fred: dict = None) -> tuple[float, dict]:
+def score_living(fred: dict = None, news: dict = None) -> tuple[float, dict]:
     """
-    Cost of living — blends US and global indicators.
-    US CPI 2.8%, Fed rate 4.50%, AU CPI 3.6%, RBA 4.10%
-    Range: CPI [1.5%, 8%], Central bank rate [1%, 7%]
-    If fred data provides case_shiller, a housing component is added.
+    Cost of living & jobs — blends CPI, rates, housing, unemployment, AI disruption.
+    Components:
+      CPI (25%), Interest rates (20%), Housing (20%), Unemployment (20%), AI disruption (15%)
     """
     fred = fred or {}
-    us_cpi   = fred.get("us_cpi", 2.8)       # % YoY — fallback hardcoded (BLS)
-    fed_rate = fred.get("fed_rate", 4.50)     # % — fallback hardcoded (FOMC)
-    au_cpi   = 3.6    # % YoY — update monthly (ABS)
-    rba_rate = 4.10   # % — update on each RBA decision
+    news = news or {}
+    us_cpi       = fred.get("us_cpi", 2.8)
+    fed_rate     = fred.get("fed_rate", 4.50)
+    au_cpi       = 3.6
+    rba_rate     = 4.10
     case_shiller = fred.get("case_shiller")
+    unemployment = fred.get("unemployment")
+    median_home  = fred.get("median_home_price")
+    ai_ratio     = news.get("ai_ratio", 1.0)
 
-    # Blend US (60%) + AU (40%)
     avg_cpi  = us_cpi * 0.6 + au_cpi * 0.4
     avg_rate = fed_rate * 0.6 + rba_rate * 0.4
 
     cpi_score  = norm(avg_cpi,  1.5, 8.0)
     rate_score = norm(avg_rate, 1.0, 7.0)
 
+    # Housing: Case-Shiller (200-400 range) or median home price ($250k-$550k)
     if case_shiller is not None:
         housing_score = norm(case_shiller, 200, 400)
-        score = cpi_score * 0.40 + rate_score * 0.40 + housing_score * 0.20
+    elif median_home is not None:
+        housing_score = norm(median_home / 1000, 250, 550)
     else:
-        score = cpi_score * 0.55 + rate_score * 0.45
+        housing_score = 50.0  # neutral fallback
+
+    # Unemployment: 3% → low concern, 8% → high concern
+    if unemployment is not None:
+        unemp_score = norm(unemployment, 3.0, 8.0)
+    else:
+        unemp_score = 30.0  # neutral fallback
+
+    # AI job disruption: article volume ratio (>1 = elevated concern)
+    ai_score = norm(ai_ratio, 0.5, 2.5)
+
+    score = (cpi_score * 0.25 + rate_score * 0.20 + housing_score * 0.20
+             + unemp_score * 0.20 + ai_score * 0.15)
 
     raw = {
         "us_cpi": us_cpi, "fed_rate": fed_rate,
@@ -148,6 +164,11 @@ def score_living(fred: dict = None) -> tuple[float, dict]:
     }
     if case_shiller is not None:
         raw["case_shiller"] = case_shiller
+    if unemployment is not None:
+        raw["unemployment"] = unemployment
+    if median_home is not None:
+        raw["median_home_price"] = median_home
+    raw["ai_disruption_ratio"] = round(ai_ratio, 3)
     return round(clamp(score), 1), raw
 
 
@@ -157,11 +178,11 @@ def score_living(fred: dict = None) -> tuple[float, dict]:
 
 WEIGHTS = {
     "geo":     0.25,
-    "energy":  0.20,
-    "trade":   0.20,
-    "markets": 0.15,
+    "markets": 0.20,
+    "energy":  0.15,
+    "trade":   0.15,
+    "living":  0.15,
     "climate": 0.10,
-    "living":  0.10,
 }
 
 LABELS = [
@@ -192,7 +213,7 @@ def calculate_scores(raw: dict) -> dict:
     energy_score,  energy_raw  = score_energy(markets)
     trade_score,   trade_raw   = score_trade(news, markets)
     climate_score, climate_raw = score_climate(climate)
-    living_score,  living_raw  = score_living(fred=fred_data)
+    living_score,  living_raw  = score_living(fred=fred_data, news=news)
 
     scores = {
         "geo":     geo_score,
@@ -218,6 +239,10 @@ def calculate_scores(raw: dict) -> dict:
         "yield_spread": fred_data.get("yield_spread"),
         "case_shiller": fred_data.get("case_shiller"),
         "fred_fed_rate": fred_data.get("fed_rate"),
+        "unemployment": fred_data.get("unemployment"),
+        "jobless_claims": fred_data.get("jobless_claims"),
+        "median_home_price": fred_data.get("median_home_price"),
+        "ai_disruption_ratio": news.get("ai_ratio"),
         **geo_raw, **markets_raw, **energy_raw,
         **trade_raw, **climate_raw, **living_raw,
     }
@@ -312,6 +337,41 @@ def calculate_scores(raw: dict) -> dict:
             "category": "markets",
             "source": "yfinance",
             "url": "https://finance.yahoo.com/quote/BTC-USD/",
+        })
+    # Unemployment signal
+    unemp = fred_data.get("unemployment")
+    if unemp is not None:
+        signals.append({
+            "text": f"US unemployment at {unemp}%",
+            "category": "jobs",
+            "source": "fred",
+            "url": "https://fred.stlouisfed.org/series/UNRATE",
+        })
+    claims = fred_data.get("jobless_claims")
+    if claims is not None:
+        signals.append({
+            "text": f"Weekly jobless claims: {claims:,.0f}",
+            "category": "jobs",
+            "source": "fred",
+            "url": "https://fred.stlouisfed.org/series/ICSA",
+        })
+    # Median home price signal
+    median_home = fred_data.get("median_home_price")
+    if median_home is not None:
+        signals.append({
+            "text": f"US median home price: ${median_home:,.0f}",
+            "category": "living",
+            "source": "fred",
+            "url": "https://fred.stlouisfed.org/series/MSPUS",
+        })
+    # AI job disruption signal
+    ai_ratio = news.get("ai_ratio", 1.0)
+    if ai_ratio > 1.2:
+        signals.append({
+            "text": f"AI job displacement coverage {ai_ratio:.1f}x above baseline",
+            "category": "jobs",
+            "source": "gdelt",
+            "url": "https://www.gdeltproject.org/",
         })
 
     log.info("Overall chaos score: %.1f — %s", overall, get_label(overall))

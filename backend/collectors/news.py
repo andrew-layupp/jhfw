@@ -27,6 +27,10 @@ TRADE_QUERY = (
     'tariff OR "trade war" OR sanctions OR embargo OR "trade deal" OR "import duty" '
     'OR "executive order" OR "Liberation Day" OR Trump'
 )
+AI_JOBS_QUERY = (
+    '"AI replacing" OR "AI layoffs" OR "artificial intelligence jobs" OR "automation unemployment" '
+    'OR "AI job loss" OR "ChatGPT replacing" OR "AI workforce" OR "tech layoffs"'
+)
 
 
 async def _timeline_volume(client: httpx.AsyncClient, query: str, days: int = 7) -> float | None:
@@ -181,9 +185,14 @@ async def fetch_news() -> dict:
         conflict_90d = await _timeline_volume(client, CONFLICT_QUERY, days=90)
         trade_90d    = await _timeline_volume(client, TRADE_QUERY,    days=90)
 
+        # AI & jobs volume
+        ai_7d  = await _timeline_volume(client, AI_JOBS_QUERY, days=7)
+        ai_90d = await _timeline_volume(client, AI_JOBS_QUERY, days=90)
+
         # Top headlines for the signals feed
         conflict_headlines = await _top_articles(client, CONFLICT_QUERY, n=4)
         trade_headlines    = await _top_articles(client, TRADE_QUERY,    n=3)
+        ai_headlines       = await _top_articles(client, AI_JOBS_QUERY,  n=3)
 
     def daily_rate(vol, days):
         return vol / days if vol else None
@@ -192,18 +201,23 @@ async def fetch_news() -> dict:
     c90 = daily_rate(conflict_90d, 90)
     t7  = daily_rate(trade_7d,  7)
     t90 = daily_rate(trade_90d, 90)
+    a7  = daily_rate(ai_7d,  7)
+    a90 = daily_rate(ai_90d, 90)
 
     # Ratio vs baseline  (>1 = elevated above 90-day average)
     conflict_ratio = (c7  / c90)  if (c7  and c90)  else 1.0
     trade_ratio    = (t7  / t90)  if (t7  and t90)  else 1.0
+    ai_ratio       = (a7  / a90)  if (a7  and a90)  else 1.0
 
-    log.info("GDELT — conflict ratio %.2f | trade ratio %.2f", conflict_ratio, trade_ratio)
+    log.info("GDELT — conflict %.2f | trade %.2f | ai_jobs %.2f", conflict_ratio, trade_ratio, ai_ratio)
 
     signals = []
     for h in conflict_headlines:
         signals.append({**h, "category": "geopolitical"})
     for h in trade_headlines:
         signals.append({**h, "category": "trade"})
+    for h in ai_headlines:
+        signals.append({**h, "category": "jobs"})
 
     # ------------------------------------------------------------------
     # NewsAPI fallback: if GDELT returned only defaults (both ratios 1.0)
@@ -236,5 +250,6 @@ async def fetch_news() -> dict:
         "trade_7d_rate":     t7,
         "trade_90d_rate":    t90,
         "trade_ratio":       round(trade_ratio, 3),
+        "ai_ratio":          round(ai_ratio, 3),
         "signals":           signals,
     }
