@@ -115,16 +115,19 @@ def score_climate(climate: dict) -> tuple[float, dict]:
     return round(clamp(score), 1), {"anomaly_c": anomaly}
 
 
-def score_living() -> tuple[float, dict]:
+def score_living(fred: dict = None) -> tuple[float, dict]:
     """
     Cost of living — blends US and global indicators.
     US CPI 2.8%, Fed rate 4.50%, AU CPI 3.6%, RBA 4.10%
     Range: CPI [1.5%, 8%], Central bank rate [1%, 7%]
+    If fred data provides case_shiller, a housing component is added.
     """
-    us_cpi   = 2.8    # % YoY — update monthly (BLS)
-    fed_rate = 4.50   # % — update on each FOMC decision
+    fred = fred or {}
+    us_cpi   = fred.get("us_cpi", 2.8)       # % YoY — fallback hardcoded (BLS)
+    fed_rate = fred.get("fed_rate", 4.50)     # % — fallback hardcoded (FOMC)
     au_cpi   = 3.6    # % YoY — update monthly (ABS)
     rba_rate = 4.10   # % — update on each RBA decision
+    case_shiller = fred.get("case_shiller")
 
     # Blend US (60%) + AU (40%)
     avg_cpi  = us_cpi * 0.6 + au_cpi * 0.4
@@ -132,11 +135,20 @@ def score_living() -> tuple[float, dict]:
 
     cpi_score  = norm(avg_cpi,  1.5, 8.0)
     rate_score = norm(avg_rate, 1.0, 7.0)
-    score = cpi_score * 0.55 + rate_score * 0.45
-    return round(clamp(score), 1), {
+
+    if case_shiller is not None:
+        housing_score = norm(case_shiller, 200, 400)
+        score = cpi_score * 0.40 + rate_score * 0.40 + housing_score * 0.20
+    else:
+        score = cpi_score * 0.55 + rate_score * 0.45
+
+    raw = {
         "us_cpi": us_cpi, "fed_rate": fed_rate,
         "au_cpi": au_cpi, "rba_rate": rba_rate,
     }
+    if case_shiller is not None:
+        raw["case_shiller"] = case_shiller
+    return round(clamp(score), 1), raw
 
 
 # ─────────────────────────────────────────────────────────────
@@ -173,13 +185,14 @@ def calculate_scores(raw: dict) -> dict:
     markets = raw.get("markets", {})
     climate = raw.get("climate", {})
     news    = raw.get("news",    {})
+    fred_data = raw.get("fred", {})
 
     geo_score,     geo_raw     = score_geopolitical(news)
     markets_score, markets_raw = score_markets(markets)
     energy_score,  energy_raw  = score_energy(markets)
     trade_score,   trade_raw   = score_trade(news, markets)
     climate_score, climate_raw = score_climate(climate)
-    living_score,  living_raw  = score_living()
+    living_score,  living_raw  = score_living(fred=fred_data)
 
     scores = {
         "geo":     geo_score,
@@ -192,12 +205,19 @@ def calculate_scores(raw: dict) -> dict:
 
     overall = round(sum(scores[k] * w for k, w in WEIGHTS.items()), 1)
 
+    btc_data = markets.get("btc", {})
+    tnx_data = markets.get("tnx", {})
     raw_flat = {
         "vix":    (markets.get("vix")    or {}).get("current"),
         "oil":    (markets.get("oil")    or {}).get("current"),
         "gold":   (markets.get("gold")   or {}).get("current"),
         "spy":    (markets.get("spy")    or {}).get("current"),
         "audusd": (markets.get("audusd") or {}).get("current"),
+        "btc":    btc_data.get("current") if btc_data else None,
+        "tnx":    tnx_data.get("current") if tnx_data else None,
+        "yield_spread": fred_data.get("yield_spread"),
+        "case_shiller": fred_data.get("case_shiller"),
+        "fred_fed_rate": fred_data.get("fed_rate"),
         **geo_raw, **markets_raw, **energy_raw,
         **trade_raw, **climate_raw, **living_raw,
     }
@@ -261,6 +281,37 @@ def calculate_scores(raw: dict) -> dict:
             "category": "markets",
             "source": "yfinance",
             "url": "https://finance.yahoo.com/quote/AUDUSD=X/",
+        })
+
+    # Yield curve inversion signal
+    yield_spread = fred_data.get("yield_spread")
+    if yield_spread is not None and yield_spread < 0:
+        spread_bps = round(yield_spread * 100)
+        signals.insert(0, {
+            "text": f"Yield curve inverted ({spread_bps}bps) — recession indicator",
+            "category": "markets",
+            "source": "fred",
+            "url": "https://fred.stlouisfed.org/series/T10Y2Y",
+        })
+    # Case-Shiller signal
+    cs_val = fred_data.get("case_shiller")
+    if cs_val is not None:
+        signals.append({
+            "text": f"US home prices at {cs_val} (Case-Shiller index)",
+            "category": "living",
+            "source": "fred",
+            "url": "https://fred.stlouisfed.org/series/CSUSHPISA",
+        })
+    # Bitcoin 30d change signal
+    btc_chg = btc_data.get("change_30d_pct") if btc_data else None
+    btc_px  = btc_data.get("current") if btc_data else None
+    if btc_chg is not None and btc_px is not None and abs(btc_chg) > 10:
+        direction = "up" if btc_chg > 0 else "down"
+        signals.insert(0, {
+            "text": f"Bitcoin {direction} {abs(btc_chg):.1f}% in 30 days (${btc_px:,.0f})",
+            "category": "markets",
+            "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/BTC-USD/",
         })
 
     log.info("Overall chaos score: %.1f — %s", overall, get_label(overall))
