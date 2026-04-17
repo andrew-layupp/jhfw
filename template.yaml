@@ -128,6 +128,29 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref SignalsTable
 
+  AuScrapboardFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-au-scrapboard
+      CodeUri: lambdas/au_scrapboard/
+      Handler: handler.lambda_handler
+      Description: GET /api/au/scrapboard — Claude web search for AU chaos factors
+      Timeout: 300
+      MemorySize: 512
+      Events:
+        GetScrapboard:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/au/scrapboard
+            Method: GET
+        GetScrapboardFactor:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/au/scrapboard/{factor_id}
+            Method: GET
+
   # ── DynamoDB Tables ───────────────────────────────────────────────────────────
 
   SnapshotsTable:
