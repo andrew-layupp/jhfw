@@ -117,17 +117,26 @@ def score_climate(climate: dict) -> tuple[float, dict]:
 
 def score_living() -> tuple[float, dict]:
     """
-    Cost of living uses semi-static cached data (CPI updates monthly).
-    Encoded from latest known values; refresh when ABS/ABS publishes.
-    AU CPI 3.6%,  US CPI 2.8%,  RBA 4.10%  → score ~67
-    Range: AU CPI [2%, 8%], RBA rate [1%, 7%]
+    Cost of living — blends US and global indicators.
+    US CPI 2.8%, Fed rate 4.50%, AU CPI 3.6%, RBA 4.10%
+    Range: CPI [1.5%, 8%], Central bank rate [1%, 7%]
     """
-    au_cpi  = 3.6    # % YoY — update monthly
-    rba_rate = 4.10  # % — update on each RBA decision
-    cpi_score  = norm(au_cpi,   2.0, 8.0)
-    rate_score = norm(rba_rate, 1.0, 7.0)
-    score = cpi_score * 0.60 + rate_score * 0.40
-    return round(clamp(score), 1), {"au_cpi": au_cpi, "rba_rate": rba_rate}
+    us_cpi   = 2.8    # % YoY — update monthly (BLS)
+    fed_rate = 4.50   # % — update on each FOMC decision
+    au_cpi   = 3.6    # % YoY — update monthly (ABS)
+    rba_rate = 4.10   # % — update on each RBA decision
+
+    # Blend US (60%) + AU (40%)
+    avg_cpi  = us_cpi * 0.6 + au_cpi * 0.4
+    avg_rate = fed_rate * 0.6 + rba_rate * 0.4
+
+    cpi_score  = norm(avg_cpi,  1.5, 8.0)
+    rate_score = norm(avg_rate, 1.0, 7.0)
+    score = cpi_score * 0.55 + rate_score * 0.45
+    return round(clamp(score), 1), {
+        "us_cpi": us_cpi, "fed_rate": fed_rate,
+        "au_cpi": au_cpi, "rba_rate": rba_rate,
+    }
 
 
 # ─────────────────────────────────────────────────────────────
@@ -201,6 +210,7 @@ def calculate_scores(raw: dict) -> dict:
             "text": f"VIX at {vix_val:.1f} — market fear index elevated",
             "category": "markets",
             "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/%5EVIX/",
         })
     oil_chg = (markets.get("oil") or {}).get("change_30d_pct")
     oil_px  = raw_flat.get("oil")
@@ -210,6 +220,47 @@ def calculate_scores(raw: dict) -> dict:
             "text": f"Brent crude {direction} {abs(oil_chg):.1f}% in 30 days (${oil_px:.0f}/bbl)",
             "category": "energy",
             "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/BZ=F/",
+        })
+    spy_chg = (markets.get("spy") or {}).get("change_30d_pct")
+    spy_px  = raw_flat.get("spy")
+    if spy_chg and spy_px and abs(spy_chg) > 3:
+        direction = "up" if spy_chg > 0 else "down"
+        signals.insert(0, {
+            "text": f"S&P 500 {direction} {abs(spy_chg):.1f}% in 30 days (${spy_px:.0f})",
+            "category": "markets",
+            "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/SPY/",
+        })
+    gold_chg = (markets.get("gold") or {}).get("change_1y_pct")
+    gold_px  = raw_flat.get("gold")
+    if gold_chg and gold_px and gold_chg > 20:
+        signals.append({
+            "text": f"Gold up {gold_chg:.1f}% year-on-year (${gold_px:.0f}/oz) — safe haven demand",
+            "category": "markets",
+            "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/GC=F/",
+        })
+    dxy_data = markets.get("dxy", {})
+    dxy_val = dxy_data.get("current")
+    dxy_chg = dxy_data.get("change_30d_pct")
+    if dxy_val and dxy_chg and abs(dxy_chg) > 2:
+        direction = "strengthening" if dxy_chg > 0 else "weakening"
+        signals.append({
+            "text": f"US Dollar Index {direction} ({dxy_val:.1f}, {dxy_chg:+.1f}% 30d)",
+            "category": "markets",
+            "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/DX-Y.NYB/",
+        })
+    audusd_val = raw_flat.get("audusd")
+    audusd_chg = (markets.get("audusd") or {}).get("change_30d_pct")
+    if audusd_val and audusd_chg and abs(audusd_chg) > 2:
+        direction = "up" if audusd_chg > 0 else "down"
+        signals.append({
+            "text": f"AUD/USD {direction} {abs(audusd_chg):.1f}% in 30 days ({audusd_val:.4f})",
+            "category": "markets",
+            "source": "yfinance",
+            "url": "https://finance.yahoo.com/quote/AUDUSD=X/",
         })
 
     log.info("Overall chaos score: %.1f — %s", overall, get_label(overall))

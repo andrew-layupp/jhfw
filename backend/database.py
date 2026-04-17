@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS signals (
     ts        TEXT NOT NULL,
     text      TEXT NOT NULL,
     category  TEXT,
-    source    TEXT
+    source    TEXT,
+    url       TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_ts ON snapshots(ts);
@@ -87,9 +88,9 @@ async def insert_signals(signals: list[dict]):
     async with aiosqlite.connect(DB_PATH) as db:
         for s in signals:
             await db.execute(
-                """INSERT OR IGNORE INTO signals (ts, text, category, source)
-                   VALUES (?,?,?,?)""",
-                (ts, s["text"], s.get("category"), s.get("source")),
+                """INSERT OR IGNORE INTO signals (ts, text, category, source, url)
+                   VALUES (?,?,?,?,?)""",
+                (ts, s["text"], s.get("category"), s.get("source"), s.get("url")),
             )
         await db.commit()
 
@@ -105,7 +106,7 @@ async def get_latest() -> Optional[dict]:
             return None
         # Recent signals
         async with db.execute(
-            "SELECT text, category, source, ts FROM signals ORDER BY id DESC LIMIT 10"
+            "SELECT text, category, source, url, ts FROM signals ORDER BY id DESC LIMIT 10"
         ) as cur:
             sigs = [dict(r) for r in await cur.fetchall()]
 

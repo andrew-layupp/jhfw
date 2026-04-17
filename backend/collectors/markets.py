@@ -37,11 +37,16 @@ async def fetch_markets() -> dict:
             if hist.empty:
                 log.warning("No data for %s", ticker)
                 continue
-            close = hist["Close"].dropna()
+            close = hist["Close"]
+            # yfinance >=0.2.36 returns MultiIndex columns for single tickers
+            if hasattr(close, "columns"):
+                close = close.iloc[:, 0]
+            close = close.dropna()
             current   = _safe_float(close)
             prev_30d  = _safe_float(close, -22)   # ~1 month of trading days
             prev_1y   = _safe_float(close, 0)
-            ath_52w   = float(close.tail(252).max())
+            max_val   = close.tail(252).max()
+            ath_52w   = float(max_val.iloc[0]) if hasattr(max_val, 'iloc') else float(max_val)
 
             change_30d_pct = (
                 (current - prev_30d) / prev_30d * 100
@@ -90,7 +95,10 @@ async def fetch_markets_history(start: datetime, end: datetime) -> dict:
                 auto_adjust=True,
             )
             if not hist.empty:
-                frames[key] = hist["Close"].dropna()
+                close = hist["Close"]
+                if hasattr(close, "columns"):
+                    close = close.iloc[:, 0]
+                frames[key] = close.dropna()
         except Exception as e:
             log.warning("History fetch failed for %s: %s", ticker, e)
 

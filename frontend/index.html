@@ -203,6 +203,55 @@
     line-height: 1.5;
   }
 
+  .signal-text a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--dim);
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .signal-text a:hover {
+    color: #fff;
+    border-bottom-color: var(--accent);
+  }
+
+  .signal-source {
+    font-size: 9px;
+    color: var(--dim);
+    margin-left: 6px;
+    white-space: nowrap;
+  }
+
+  .signal-source a {
+    color: var(--dim);
+    text-decoration: none;
+    border-bottom: 1px dotted #333;
+  }
+
+  .signal-source a:hover { color: var(--muted); }
+
+  .raw-link {
+    color: var(--dim);
+    text-decoration: none;
+    border-bottom: 1px dotted #333;
+    transition: color 0.2s;
+  }
+
+  .raw-link:hover { color: var(--muted); }
+
+  .sub-card-source {
+    font-size: 9px;
+    margin-top: 6px;
+  }
+
+  .sub-card-source a {
+    color: var(--dim);
+    text-decoration: none;
+    border-bottom: 1px dotted #333;
+  }
+
+  .sub-card-source a:hover { color: var(--muted); }
+
   /* Footer */
   .footer {
     border-top: 1px solid var(--border);
@@ -321,8 +370,8 @@
 
   <!-- Footer -->
   <div class="footer">
-    <span class="mono" style="font-size:11px;color:var(--muted)">justhowfuckedarewe.com · prototype</span>
-    <span class="mono" style="font-size:11px;color:var(--muted)">Static data · live feeds coming soon</span>
+    <span class="mono" style="font-size:11px;color:var(--muted)">justhowfuckedarewe.com</span>
+    <span class="mono" style="font-size:11px;color:var(--muted)">Sources: <a class="raw-link" href="https://finance.yahoo.com/" target="_blank" rel="noopener">Yahoo Finance</a> · <a class="raw-link" href="https://www.gdeltproject.org/" target="_blank" rel="noopener">GDELT</a> · <a class="raw-link" href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · <a class="raw-link" href="https://fred.stlouisfed.org/" target="_blank" rel="noopener">FRED</a></span>
   </div>
 
 </div>
@@ -336,21 +385,21 @@ const POLL_MS     = 5 * 60 * 1000;  // re-fetch every 5 minutes
 const DATA = {
   overall: 76,
   categories: [
-    { id:'geo',     label:'Geopolitical',  score:82, detail:'59 active conflicts. US-Iran ceasefire barely holding. Russia hammers Ukraine nightly.' },
-    { id:'energy',  label:'Energy',        score:85, detail:'Strait of Hormuz barely open. Airlines cancelling routes. Systemic fuel shortage risk.' },
-    { id:'trade',   label:'Trade wars',    score:79, detail:'$6.6T wiped on Liberation Day. 100+ nations hit. No stable tariff rate anywhere.' },
-    { id:'climate', label:'Climate',       score:71, detail:'Hottest March on record — by widest margin ever. El Niño building again.' },
-    { id:'markets', label:'Markets',       score:65, detail:'VIX elevated. S&P 500 well off highs. Business confidence cratering globally.' },
-    { id:'living',  label:'Cost of living',score:67, detail:'AU housing +7.2% YoY. RBA at 4.10%. Wages lag inflation in every major economy.' },
+    { id:'geo',     label:'Geopolitical',  score:82, detail:'59 active conflicts globally. US-Iran ceasefire fragile. Russia escalating in Ukraine. Trump administration reshaping alliances.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}] },
+    { id:'energy',  label:'Energy',        score:85, detail:'Strait of Hormuz barely open. Oil supply chain stress. Trump energy policy whiplash affecting global markets.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/quote/BZ=F/'}] },
+    { id:'trade',   label:'Trade wars',    score:79, detail:'Trump tariffs hit 100+ nations. $6.6T wiped on Liberation Day. No stable tariff rate anywhere. WTO effectively sidelined.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'},{label:'WTO',url:'https://www.wto.org/'}] },
+    { id:'climate', label:'Climate',       score:71, detail:'Hottest March on record globally — by widest margin ever. El Niño building again. US climate policy rollbacks accelerating.', sources:[{label:'Open-Meteo',url:'https://open-meteo.com/'},{label:'NASA GISS',url:'https://data.giss.nasa.gov/gistemp/'}] },
+    { id:'markets', label:'Markets',       score:65, detail:'VIX elevated. S&P 500 volatile on policy uncertainty. Fed holding rates. Business confidence cratering globally.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/quote/%5EVIX/'},{label:'FRED',url:'https://fred.stlouisfed.org/'}] },
+    { id:'living',  label:'Cost of living',score:67, detail:'US CPI 2.8%. Fed rate 4.50%. Tariff pass-through hitting consumer prices. Housing unaffordable in most major cities globally.', sources:[{label:'BLS CPI',url:'https://www.bls.gov/cpi/'},{label:'FRED',url:'https://fred.stlouisfed.org/series/CPIAUCSL'}] },
   ],
   signals: [
-    { age:'4m ago',  text:'Russia fires 200+ drones at Ukrainian civilian areas overnight — at least 16 dead' },
-    { age:'17m ago', text:'Brent crude up 2.1% on renewed Strait of Hormuz supply uncertainty' },
-    { age:'38m ago', text:'EU-US trade deal talks stalled after Trump Supreme Court ruling' },
-    { age:'1h ago',  text:'Airlines cutting routes as systemic jet fuel shortage risk escalates across Asia' },
-    { age:'2h ago',  text:'March 2026 confirmed hottest on record for continental US — by widest margin of any month ever' },
-    { age:'3h ago',  text:'RBA signals further rate hikes possible — cash rate now at 4.10%' },
-    { age:'4h ago',  text:'AU housing costs rose 7.2% in 12 months to Feb 2026 — now biggest CPI contributor' },
+    { age:'4m ago',  text:'Russia fires 200+ drones at Ukrainian civilian areas overnight — at least 16 dead', url:'https://www.gdeltproject.org/' },
+    { age:'17m ago', text:'Brent crude up 2.1% on renewed Strait of Hormuz supply uncertainty', url:'https://finance.yahoo.com/quote/BZ=F/' },
+    { age:'38m ago', text:'Trump tariff threats escalate — EU retaliatory measures under discussion', url:'https://www.gdeltproject.org/' },
+    { age:'1h ago',  text:'S&P 500 swings 2% intraday as trade policy uncertainty spooks markets', url:'https://finance.yahoo.com/quote/SPY/' },
+    { age:'2h ago',  text:'March 2026 confirmed hottest on record globally — by widest margin of any month ever', url:'https://data.giss.nasa.gov/gistemp/' },
+    { age:'3h ago',  text:'Fed holds rates at 4.50% — signals concern over tariff-driven inflation', url:'https://fred.stlouisfed.org/series/FEDFUNDS' },
+    { age:'4h ago',  text:'US Dollar weakening as global de-dollarisation accelerates', url:'https://finance.yahoo.com/quote/DX-Y.NYB/' },
   ]
 };
 
@@ -454,16 +503,16 @@ function applyLiveData(cur, hist) {
     document.getElementById('main-prog'),
     document.getElementById('main-verdict'), 0);
 
-  // Update raw readouts
+  // Update raw readouts with links
   const r = cur.raw || {};
   const rawBar = document.getElementById('raw-bar');
   if (rawBar) {
     rawBar.innerHTML = [
-      r.vix    ? `VIX <strong>${r.vix.toFixed(1)}</strong>` : '',
-      r.oil    ? `Brent <strong>$${r.oil.toFixed(0)}</strong>` : '',
-      r.gold   ? `Gold <strong>$${r.gold.toFixed(0)}</strong>` : '',
-      r.spy    ? `S&P <strong>${r.spy.toFixed(0)}</strong>` : '',
-      r.audusd ? `AUD/USD <strong>${r.audusd.toFixed(4)}</strong>` : '',
+      r.vix    ? `<a class="raw-link" href="https://finance.yahoo.com/quote/%5EVIX/" target="_blank" rel="noopener">VIX <strong>${r.vix.toFixed(1)}</strong></a>` : '',
+      r.oil    ? `<a class="raw-link" href="https://finance.yahoo.com/quote/BZ=F/" target="_blank" rel="noopener">Brent <strong>$${r.oil.toFixed(0)}</strong></a>` : '',
+      r.gold   ? `<a class="raw-link" href="https://finance.yahoo.com/quote/GC=F/" target="_blank" rel="noopener">Gold <strong>$${r.gold.toFixed(0)}</strong></a>` : '',
+      r.spy    ? `<a class="raw-link" href="https://finance.yahoo.com/quote/SPY/" target="_blank" rel="noopener">S&P <strong>${r.spy.toFixed(0)}</strong></a>` : '',
+      r.audusd ? `<a class="raw-link" href="https://finance.yahoo.com/quote/AUDUSD=X/" target="_blank" rel="noopener">AUD/USD <strong>${r.audusd.toFixed(4)}</strong></a>` : '',
     ].filter(Boolean).join(' &nbsp;·&nbsp; ');
   }
 
@@ -483,16 +532,22 @@ function applyLiveData(cur, hist) {
   const sigList = document.getElementById('signals-list');
   if (sigList && sigs.length) {
     sigList.innerHTML = '';
-    sigs.slice(0, 8).forEach((sig, i) => {
+    sigs.slice(0, 10).forEach((sig, i) => {
       const row = document.createElement('div');
       row.className = 'signal-row';
       if (i % 2 === 1) row.style.background = 'var(--surface)';
       const age = sig.ts
         ? new Date(sig.ts + 'Z').toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) + ' AEDT'
         : (sig.age || '');
+      const textHtml = sig.url
+        ? `<a href="${sig.url}" target="_blank" rel="noopener">${sig.text}</a>`
+        : sig.text;
+      const sourceHtml = sig.source
+        ? `<span class="signal-source mono">${sig.source}</span>`
+        : '';
       row.innerHTML = `
         <span class="mono signal-age">${age}</span>
-        <span class="signal-text">${sig.text}</span>`;
+        <span class="signal-text">${textHtml}${sourceHtml}</span>`;
       sigList.appendChild(row);
     });
   }
@@ -534,6 +589,9 @@ DATA.categories.forEach((cat, i) => {
   const card = document.createElement('div');
   card.className = 'sub-card';
   const uid = `sc-${cat.id}`;
+  const sourcesHtml = (cat.sources || []).map(s =>
+    `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`
+  ).join(' · ');
   card.innerHTML = `
     <svg width="110" height="86" viewBox="0 0 110 110" preserveAspectRatio="xMidYMin slice" style="display:block;margin:0 auto">
       <path d="${arcD(55,55,37,225,270)}" fill="none" stroke="#252525" stroke-width="10" stroke-linecap="round"/>
@@ -544,6 +602,7 @@ DATA.categories.forEach((cat, i) => {
     <div style="margin-top:-4px">
       <div class="sub-card-label mono">${cat.label}</div>
       <div class="sub-card-detail">${cat.detail}</div>
+      ${sourcesHtml ? `<div class="sub-card-source mono">${sourcesHtml}</div>` : ''}
     </div>`;
   grid.appendChild(card);
   animateVal(cat.score, cat.score, 55, 55, 37,
@@ -561,7 +620,7 @@ const TIMELINE = [
   { date:'Nov 3',  score:55, event:null },
   { date:'Nov 10', score:57, event:null },
   { date:'Nov 17', score:55, event:null },
-  { date:'Nov 24', score:53, event:'RBA completes 3 cuts — cash rate 3.60%' },
+  { date:'Nov 24', score:53, event:'Trump reshuffles cabinet — hawkish trade appointments' },
   { date:'Dec 1',  score:54, event:null },
   { date:'Dec 8',  score:56, event:null },
   { date:'Dec 15', score:53, event:null },
@@ -572,13 +631,13 @@ const TIMELINE = [
   { date:'Jan 19', score:60, event:null },
   { date:'Jan 26', score:63, event:null },
   { date:'Feb 2',  score:65, event:null },
-  { date:'Feb 9',  score:68, event:'RBA hikes to 3.85% — first hike since Nov 2023' },
+  { date:'Feb 9',  score:68, event:'Trump signs sweeping tariff executive orders — markets reel' },
   { date:'Feb 16', score:66, event:null },
   { date:'Feb 23', score:68, event:null },
   { date:'Mar 2',  score:70, event:null },
   { date:'Mar 9',  score:74, event:'Iran closes Strait of Hormuz — global energy shock' },
   { date:'Mar 16', score:73, event:null },
-  { date:'Mar 23', score:75, event:'RBA hikes again to 4.10%' },
+  { date:'Mar 23', score:75, event:'EU announces retaliatory tariffs — trade war escalates' },
   { date:'Mar 30', score:74, event:null },
   { date:'Apr 6',  score:75, event:'Liberation Day tariff anniversary — chaos escalates' },
   { date:'Apr 13', score:76, event:null },
@@ -737,9 +796,12 @@ renderChart();
 DATA.signals.forEach((sig, i) => {
   const row = document.createElement('div');
   row.className = 'signal-row';
+  const textHtml = sig.url
+    ? `<a href="${sig.url}" target="_blank" rel="noopener">${sig.text}</a>`
+    : sig.text;
   row.innerHTML = `
     <span class="mono signal-age">${sig.age}</span>
-    <span class="signal-text">${sig.text}</span>`;
+    <span class="signal-text">${textHtml}</span>`;
   sigList.appendChild(row);
 });
 </script>

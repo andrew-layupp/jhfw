@@ -16,10 +16,11 @@ GDELT_DOC = "https://api.gdeltproject.org/api/v2/doc/doc"
 
 CONFLICT_QUERY = (
     "war OR conflict OR missile OR airstrike OR nuclear OR troops OR ceasefire "
-    "OR casualties OR military OR escalation"
+    "OR casualties OR military OR escalation OR invasion"
 )
 TRADE_QUERY = (
-    'tariff OR "trade war" OR sanctions OR embargo OR "trade deal" OR "import duty"'
+    'tariff OR "trade war" OR sanctions OR embargo OR "trade deal" OR "import duty" '
+    'OR "executive order" OR "Liberation Day" OR Trump'
 )
 
 
