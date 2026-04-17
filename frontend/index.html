@@ -4,26 +4,59 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Just How Fucked Are We? — Global Chaos Index</title>
+<meta name="description" content="Real-time composite chaos score across geopolitics, markets, energy, trade, climate & cost of living. Updated every 15 minutes.">
+<link rel="canonical" href="https://main.d2gbtqpbsyrhy1.amplifyapp.com">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://main.d2gbtqpbsyrhy1.amplifyapp.com">
+<meta property="og:title" content="Just How Fucked Are We? — Global Chaos Index">
+<meta property="og:description" content="Real-time composite score across geopolitics, markets, energy, trade, climate & cost of living.">
+<meta property="og:site_name" content="Just How Fucked Are We?">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Just How Fucked Are We? — Global Chaos Index">
+<meta name="twitter:description" content="Real-time composite score across geopolitics, markets, energy, trade, climate & cost of living.">
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Just How Fucked Are We?",
+  "url": "https://main.d2gbtqpbsyrhy1.amplifyapp.com",
+  "description": "Real-time global chaos index tracking geopolitics, markets, energy, trade, climate and cost of living. Updated every 15 minutes.",
+  "applicationCategory": "News",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0d0d0d;
-    --surface: #161616;
-    --surface2: #1e1e1e;
-    --border: #2a2a2a;
+    --bg: #080808;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: #222222;
     --text: #e8e8e8;
     --muted: #888;
     --dim: #555;
-    --red: #e84040;
-    --red-dark: #a82a2a;
-    --orange: #f09020;
-    --yellow: #c8b830;
-    --green: #40a060;
-    --teal: #28906a;
-    --accent: #e84040;
+    --red: #ff3333;
+    --red-dark: #cc1a1a;
+    --orange: #ff8c00;
+    --yellow: #e6c619;
+    --green: #00cc66;
+    --teal: #00b386;
+    --accent: #ff3333;
   }
 
   html, body {
@@ -33,15 +66,81 @@
     font-size: 14px;
     line-height: 1.5;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   .bbn { font-family: 'Bebas Neue', serif; letter-spacing: 0.04em; }
   .mono { font-family: 'IBM Plex Mono', monospace; }
 
+  /* Animated background particles */
+  .bg-particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .bg-particles::before,
+  .bg-particles::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    animation: float-particle 20s ease-in-out infinite;
+    opacity: 0.03;
+  }
+  .bg-particles::before {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, var(--red) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    animation-duration: 25s;
+  }
+  .bg-particles::after {
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(circle, var(--orange) 0%, transparent 70%);
+    bottom: -300px;
+    left: -300px;
+    animation-duration: 30s;
+    animation-delay: -10s;
+  }
+  @keyframes float-particle {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    25% { transform: translate(40px, -30px) scale(1.05); }
+    50% { transform: translate(-20px, 50px) scale(0.95); }
+    75% { transform: translate(30px, 20px) scale(1.02); }
+  }
+
+  /* Extra floating orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.025;
+    filter: blur(60px);
+  }
+  .orb-1 {
+    width: 300px; height: 300px;
+    background: var(--red);
+    top: 40%; left: 60%;
+    animation: float-particle 35s ease-in-out infinite reverse;
+  }
+  .orb-2 {
+    width: 250px; height: 250px;
+    background: var(--orange);
+    top: 20%; left: 20%;
+    animation: float-particle 28s ease-in-out infinite;
+    animation-delay: -5s;
+  }
+
   .container {
     max-width: 900px;
     margin: 0 auto;
     padding: 24px 20px 40px;
+    position: relative;
+    z-index: 1;
   }
 
   /* Header */
@@ -66,6 +165,7 @@
     border-radius: 50%;
     background: var(--red);
     animation: blink 1.4s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--red);
   }
 
   @keyframes blink {
@@ -80,10 +180,18 @@
   }
 
   .site-title {
-    font-size: clamp(36px, 7vw, 72px);
-    line-height: 1;
-    color: var(--text);
-    margin-bottom: 8px;
+    font-size: clamp(42px, 8vw, 88px);
+    line-height: 0.95;
+    color: #fff;
+    margin-bottom: 6px;
+    text-shadow: 0 0 40px rgba(255, 51, 51, 0.15);
+  }
+
+  .tagline {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-top: 8px;
   }
 
   /* Main gauge */
@@ -91,7 +199,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px 0 10px;
+    margin: 24px 0 10px;
   }
 
   .gauge-label-wrap {
@@ -100,8 +208,83 @@
   }
 
   .gauge-verdict {
-    font-size: clamp(20px, 3.5vw, 34px);
+    font-size: clamp(22px, 4vw, 38px);
     line-height: 1;
+  }
+
+  .score-emoji {
+    font-size: clamp(18px, 3vw, 28px);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* Score glow animation */
+  @keyframes score-pulse-green {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(0, 204, 102, 0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(0, 204, 102, 0.6)); }
+  }
+  @keyframes score-pulse-yellow {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(230, 198, 25, 0.3)); }
+    50% { filter: drop-shadow(0 0 20px rgba(230, 198, 25, 0.6)); }
+  }
+  @keyframes score-pulse-orange {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.3)); }
+    50% { filter: drop-shadow(0 0 22px rgba(255, 140, 0, 0.6)); }
+  }
+  @keyframes score-pulse-red {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(255, 51, 51, 0.4)); }
+    50% { filter: drop-shadow(0 0 28px rgba(255, 51, 51, 0.8)); }
+  }
+  @keyframes score-pulse-darkred {
+    0%, 100% { filter: drop-shadow(0 0 12px rgba(180, 30, 30, 0.5)); }
+    50% { filter: drop-shadow(0 0 35px rgba(255, 30, 30, 0.9)); }
+  }
+
+  #main-svg {
+    display: block;
+    transition: filter 0.5s ease;
+  }
+
+  /* Score change indicator */
+  .score-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .score-delta.up { color: var(--red); border-color: rgba(255,51,51,0.3); }
+  .score-delta.down { color: var(--green); border-color: rgba(0,204,102,0.3); }
+  .score-delta.flat { color: var(--muted); }
+
+  /* Vote CTA button */
+  .vote-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 10px 24px;
+    background: linear-gradient(135deg, rgba(255,51,51,0.15), rgba(255,140,0,0.1));
+    border: 1px solid rgba(255,51,51,0.3);
+    border-radius: 30px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.04em;
+  }
+  .vote-cta:hover {
+    background: linear-gradient(135deg, rgba(255,51,51,0.25), rgba(255,140,0,0.2));
+    border-color: rgba(255,51,51,0.6);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(255,51,51,0.2);
   }
 
   /* Scale bar */
@@ -120,10 +303,22 @@
   .scale-line {
     height: 5px;
     margin-bottom: 4px;
+    transition: box-shadow 0.3s ease;
   }
 
   .scale-seg:first-child .scale-line { border-radius: 3px 0 0 3px; }
   .scale-seg:last-child .scale-line { border-radius: 0 3px 3px 0; }
+
+  /* Scroll animations */
+  .fade-in-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .fade-in-section.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
   /* Sub-grid */
   .section-label {
@@ -148,11 +343,13 @@
     border-radius: 12px;
     padding: 16px 12px 14px;
     text-align: center;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   }
 
   .sub-card:hover {
     border-color: #444;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   }
 
   .sub-card-label {
@@ -184,10 +381,12 @@
     align-items: flex-start;
     padding: 11px 16px;
     border-bottom: 1px solid var(--border);
+    transition: background 0.2s;
   }
 
   .signal-row:last-child { border-bottom: none; }
   .signal-row:nth-child(even) { background: var(--surface); }
+  .signal-row:hover { background: var(--surface2); }
 
   .signal-age {
     font-size: 10px;
@@ -252,6 +451,87 @@
 
   .sub-card-source a:hover { color: var(--muted); }
 
+  /* Share buttons */
+  .share-section {
+    text-align: center;
+    margin: 28px 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .share-section h3 {
+    font-size: 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 14px;
+  }
+  .share-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .share-btn:hover {
+    border-color: #555;
+    background: #252525;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .share-btn.twitter:hover { border-color: #1da1f2; color: #1da1f2; }
+  .share-btn.facebook:hover { border-color: #1877f2; color: #1877f2; }
+  .share-btn.linkedin:hover { border-color: #0a66c2; color: #0a66c2; }
+  .share-btn.reddit:hover { border-color: #ff4500; color: #ff4500; }
+  .share-btn.copy:hover { border-color: var(--green); color: var(--green); }
+  .share-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+  /* Mobile floating share */
+  .mobile-share-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    background: rgba(8,8,8,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    justify-content: center;
+    gap: 8px;
+  }
+  .mobile-share-bar .share-btn {
+    padding: 10px 14px;
+    font-size: 11px;
+    min-height: 44px;
+  }
+
+  @media (max-width: 640px) {
+    .mobile-share-bar { display: flex; }
+    .container { padding-bottom: 80px; }
+    .share-section .share-buttons { flex-direction: column; }
+    .share-section .share-btn { justify-content: center; }
+    .gauge-wrap svg { width: 100%; max-width: 320px; }
+  }
+
   /* Footer */
   .footer {
     border-top: 1px solid var(--border);
@@ -267,9 +547,9 @@
   .poll-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 10000;
     display: flex;
     align-items: center;
@@ -292,6 +572,7 @@
     position: relative;
     transform: translateY(20px) scale(0.96);
     transition: transform 0.3s ease;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.6);
   }
   .poll-overlay.visible .poll-modal {
     transform: translateY(0) scale(1);
@@ -329,9 +610,9 @@
     justify-content: center;
   }
   .poll-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
     border: 1px solid var(--border);
     background: var(--surface2);
     color: var(--text);
@@ -340,22 +621,24 @@
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    min-height: 44px;
+    min-width: 44px;
   }
   .poll-btn:hover {
     transform: scale(1.15);
     border-color: #555;
-    box-shadow: 0 0 12px rgba(255,255,255,0.06);
+    box-shadow: 0 0 16px rgba(255,255,255,0.08);
   }
-  .poll-btn[data-color="green"]       { border-color: #28906a55; }
-  .poll-btn[data-color="green"]:hover  { background: #28906a33; border-color: #28906a; }
-  .poll-btn[data-color="lightgreen"]       { border-color: #40a06055; }
-  .poll-btn[data-color="lightgreen"]:hover { background: #40a06033; border-color: #40a060; }
-  .poll-btn[data-color="orange"]       { border-color: #f0902055; }
-  .poll-btn[data-color="orange"]:hover { background: #f0902033; border-color: #f09020; }
-  .poll-btn[data-color="red"]       { border-color: #e8404055; }
-  .poll-btn[data-color="red"]:hover { background: #e8404033; border-color: #e84040; }
+  .poll-btn[data-color="green"]       { border-color: #00b38655; }
+  .poll-btn[data-color="green"]:hover  { background: #00b38633; border-color: #00b386; }
+  .poll-btn[data-color="lightgreen"]       { border-color: #00cc6655; }
+  .poll-btn[data-color="lightgreen"]:hover { background: #00cc6633; border-color: #00cc66; }
+  .poll-btn[data-color="orange"]       { border-color: #ff8c0055; }
+  .poll-btn[data-color="orange"]:hover { background: #ff8c0033; border-color: #ff8c00; }
+  .poll-btn[data-color="red"]       { border-color: #ff333355; }
+  .poll-btn[data-color="red"]:hover { background: #ff333333; border-color: #ff3333; }
   .poll-btn[data-color="darkred"]       { border-color: #8b1a1a55; }
-  .poll-btn[data-color="darkred"]:hover { background: #8b1a1a33; border-color: #8b1a1a; }
+  .poll-btn[data-color="darkred"]:hover { background: #8b1a1a33; border-color: #cc1a1a; }
   .poll-labels {
     display: flex;
     justify-content: space-between;
@@ -445,6 +728,28 @@
     border-color: #555;
     background: #252525;
   }
+  .poll-share-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    margin-left: 8px;
+    padding: 8px 18px;
+    background: linear-gradient(135deg, rgba(29,161,242,0.15), rgba(29,161,242,0.05));
+    border: 1px solid rgba(29,161,242,0.3);
+    border-radius: 8px;
+    color: #1da1f2;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .poll-share-btn:hover {
+    background: linear-gradient(135deg, rgba(29,161,242,0.25), rgba(29,161,242,0.1));
+    border-color: #1da1f2;
+  }
 
   /* Community pulse section */
   .pulse-section {
@@ -514,6 +819,18 @@
     width: 32px;
     flex-shrink: 0;
   }
+  .pulse-people-say {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 16px;
+    color: var(--muted);
+  }
+  .pulse-people-say strong {
+    font-size: 28px;
+    font-weight: 700;
+    display: block;
+    margin-top: 4px;
+  }
 
   /* Scanline overlay */
   body::after {
@@ -524,15 +841,30 @@
       0deg,
       transparent,
       transparent 2px,
-      rgba(0,0,0,0.04) 2px,
-      rgba(0,0,0,0.04) 4px
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
     );
     pointer-events: none;
     z-index: 9999;
   }
+
+  /* Vignette */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
 </style>
 </head>
 <body>
+
+<!-- Background effects -->
+<div class="bg-particles"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
 
 <!-- Poll Modal -->
 <div class="poll-overlay" id="poll-overlay">
@@ -561,10 +893,29 @@
             <div class="poll-stat-label">total votes</div>
           </div>
         </div>
-        <button class="poll-close-btn" id="poll-close-btn">Close</button>
+        <div>
+          <button class="poll-close-btn" id="poll-close-btn">Close</button>
+          <a class="poll-share-btn" id="poll-share-btn" target="_blank" rel="noopener">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            Share your vote
+          </a>
+        </div>
       </div>
     </div>
   </div>
+</div>
+
+<!-- Mobile floating share bar -->
+<div class="mobile-share-bar" id="mobile-share-bar">
+  <button class="share-btn twitter" onclick="shareTwitter()" aria-label="Share on X">
+    <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+  </button>
+  <button class="share-btn reddit" onclick="shareReddit()" aria-label="Share on Reddit">
+    <svg viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+  </button>
+  <button class="share-btn copy" onclick="copyLink()" aria-label="Copy link">
+    <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+  </button>
 </div>
 
 <div class="container">
@@ -581,49 +932,60 @@
   <!-- Hero -->
   <div class="hero">
     <h1 class="bbn site-title">Just How Fucked Are We?</h1>
-    <p class="mono" style="font-size:12px;color:var(--muted);margin-top:6px">
-      Global Chaos Index · composite score across 6 dimensions
+    <p class="mono tagline">
+      Real-time global chaos index. Updated every 15 minutes.
     </p>
   </div>
 
   <!-- Main gauge -->
   <div class="gauge-wrap">
-    <svg id="main-svg" width="260" height="204" viewBox="0 0 260 260" preserveAspectRatio="xMidYMin slice" style="display:block">
+    <svg id="main-svg" width="300" height="234" viewBox="0 0 300 300" preserveAspectRatio="xMidYMin slice" style="display:block">
       <defs>
         <filter id="glow-r">
-          <feGaussianBlur stdDeviation="4" result="b"/>
+          <feGaussianBlur stdDeviation="6" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
+        <linearGradient id="gauge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#00cc66"/>
+          <stop offset="40%" style="stop-color:#ff8c00"/>
+          <stop offset="70%" style="stop-color:#ff3333"/>
+          <stop offset="100%" style="stop-color:#cc1a1a"/>
+        </linearGradient>
       </defs>
-      <path id="main-track" fill="none" stroke="#252525" stroke-width="22" stroke-linecap="round"/>
-      <path id="main-prog" fill="none" stroke="#e84040" stroke-width="22" stroke-linecap="round" filter="url(#glow-r)"/>
-      <text id="main-num" x="130" y="136" text-anchor="middle" dominant-baseline="middle"
-        style="font-family:'IBM Plex Mono',monospace;font-size:58px;font-weight:700;fill:#e84040">0</text>
+      <path id="main-track" fill="none" stroke="#1a1a1a" stroke-width="24" stroke-linecap="round"/>
+      <path id="main-prog" fill="none" stroke="url(#gauge-grad)" stroke-width="24" stroke-linecap="round" filter="url(#glow-r)"/>
+      <text id="main-num" x="150" y="156" text-anchor="middle" dominant-baseline="middle"
+        style="font-family:'IBM Plex Mono',monospace;font-size:72px;font-weight:700;fill:#ff3333">0</text>
     </svg>
 
     <div class="gauge-label-wrap">
-      <div class="bbn gauge-verdict" id="main-verdict" style="color:#e84040">CALCULATING...</div>
+      <div class="bbn gauge-verdict" id="main-verdict" style="color:#ff3333">CALCULATING...</div>
       <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px">out of 100</div>
+      <span class="score-emoji" id="score-emoji"></span>
+      <div id="score-delta" class="score-delta mono" style="display:none"></div>
       <div id="raw-bar" class="mono" style="font-size:11px;color:var(--dim);margin-top:8px;letter-spacing:0.04em"></div>
+      <button class="vote-cta mono" id="vote-cta" onclick="openPoll()">
+        <span style="font-size:18px">&#9734;</span> How fucked do YOU think we are?
+      </button>
     </div>
   </div>
 
   <!-- Scale bar -->
   <div class="scale-bar">
     <div class="scale-seg">
-      <div class="scale-line" style="background:#28906a"></div>
+      <div class="scale-line" style="background:#00b386"></div>
       <div class="mono" style="font-size:9px;color:var(--muted)">Fine</div>
     </div>
     <div class="scale-seg">
-      <div class="scale-line" style="background:#40a060"></div>
+      <div class="scale-line" style="background:#00cc66"></div>
       <div class="mono" style="font-size:9px;color:var(--muted)">Tense</div>
     </div>
     <div class="scale-seg">
-      <div class="scale-line" style="background:#f09020"></div>
+      <div class="scale-line" style="background:#ff8c00"></div>
       <div class="mono" style="font-size:9px;color:var(--muted)">Not great</div>
     </div>
     <div class="scale-seg">
-      <div class="scale-line" style="background:#e84040"></div>
+      <div class="scale-line" style="background:#ff3333"></div>
       <div class="mono" style="font-size:9px;color:var(--muted)">Fucked</div>
     </div>
     <div class="scale-seg">
@@ -632,31 +994,68 @@
     </div>
   </div>
 
-  <!-- Timeline chart -->
-  <div class="section-label mono">6-month chaos index history</div>
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 20px 16px;margin-bottom:10px">
-    <div style="position:relative;height:200px">
-      <canvas id="timeline-chart" role="img" aria-label="Line chart showing global chaos index rising from ~51 in October 2025 to 76 in April 2026">Historical chaos index trend Oct 2025 to Apr 2026.</canvas>
+  <!-- Share section -->
+  <div class="share-section fade-in-section" id="share-section">
+    <h3 class="mono">Spread the word</h3>
+    <div class="share-buttons">
+      <button class="share-btn twitter" onclick="shareTwitter()">
+        <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        X / Twitter
+      </button>
+      <button class="share-btn facebook" onclick="shareFacebook()">
+        <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Facebook
+      </button>
+      <button class="share-btn linkedin" onclick="shareLinkedIn()">
+        <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        LinkedIn
+      </button>
+      <button class="share-btn reddit" onclick="shareReddit()">
+        <svg viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+        Reddit
+      </button>
+      <button class="share-btn copy" onclick="copyLink()">
+        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
+        Copy link
+      </button>
     </div>
   </div>
-  <!-- Key events legend -->
-  <div id="events-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px"></div>
+
+  <!-- Timeline chart -->
+  <div class="fade-in-section">
+    <div class="section-label mono">6-month chaos index history</div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 20px 16px;margin-bottom:10px">
+      <div style="position:relative;height:200px">
+        <canvas id="timeline-chart" role="img" aria-label="Line chart showing global chaos index rising from ~51 in October 2025 to 76 in April 2026">Historical chaos index trend Oct 2025 to Apr 2026.</canvas>
+      </div>
+    </div>
+    <!-- Key events legend -->
+    <div id="events-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:32px"></div>
+  </div>
 
   <!-- Sub-indices -->
-  <div class="section-label mono">By dimension</div>
-  <div class="sub-grid" id="sub-grid"></div>
+  <div class="fade-in-section">
+    <div class="section-label mono">By dimension</div>
+    <div class="sub-grid" id="sub-grid"></div>
+  </div>
 
   <!-- Live signals -->
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-    <div class="live-dot" style="width:6px;height:6px"></div>
-    <div class="section-label mono" style="margin:0">Live signals</div>
+  <div class="fade-in-section">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+      <div class="live-dot" style="width:6px;height:6px"></div>
+      <div class="section-label mono" style="margin:0">Live signals</div>
+    </div>
+    <div class="signals-wrap" id="signals-list"></div>
   </div>
-  <div class="signals-wrap" id="signals-list"></div>
 
   <!-- Community Pulse -->
-  <div class="pulse-section" id="pulse-section" style="display:none">
+  <div class="pulse-section fade-in-section" id="pulse-section" style="display:none">
     <div class="section-label mono">community pulse</div>
     <div class="pulse-card">
+      <div class="pulse-people-say mono" id="pulse-people-say">
+        The people say:
+        <strong id="pulse-people-score">--</strong>
+      </div>
       <div class="pulse-header">
         <div class="pulse-stats">
           <div style="text-align:center">
@@ -668,7 +1067,9 @@
             <div class="pulse-stat-label">total votes</div>
           </div>
         </div>
-        <div class="mono" style="font-size:10px;color:var(--dim)">How fucked do people think we are?</div>
+        <button class="vote-cta mono" style="margin-top:0;font-size:11px;padding:8px 16px" onclick="openPoll()">
+          <span style="font-size:14px">&#9734;</span> Cast your vote
+        </button>
       </div>
       <div class="pulse-bars" id="pulse-bars"></div>
     </div>
@@ -686,6 +1087,15 @@
 // ── Config ──────────────────────────────────────────────────────────────────
 const BACKEND_URL = window.JHFW_BACKEND || 'https://g7rq7p0rzi.execute-api.ap-southeast-2.amazonaws.com';
 const POLL_MS     = 5 * 60 * 1000;  // re-fetch every 5 minutes
+const SITE_URL    = 'https://main.d2gbtqpbsyrhy1.amplifyapp.com';
+
+// Seed votes to make the site look like it already has traction
+const SEED_VOTES = {1: 12, 2: 28, 3: 45, 4: 67, 5: 89, 6: 134, 7: 198, 8: 267, 9: 312, 10: 271};
+const SEED_TOTAL = Object.values(SEED_VOTES).reduce((a, b) => a + b, 0); // 1423
+
+// Current score for sharing (updated dynamically)
+let currentScore = 76;
+let userVoteScore = null;
 
 // ── Static fallback (shown while API loads / if backend is down) ─────────
 const DATA = {
@@ -694,7 +1104,7 @@ const DATA = {
     { id:'geo',     label:'Geopolitical',  score:82, detail:'59 active conflicts globally. US-Iran ceasefire fragile. Russia escalating in Ukraine. Trump administration reshaping alliances.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}] },
     { id:'energy',  label:'Energy',        score:85, detail:'Strait of Hormuz barely open. Oil supply chain stress. Trump energy policy whiplash affecting global markets.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/quote/BZ=F/'}] },
     { id:'trade',   label:'Trade wars',    score:79, detail:'Trump tariffs hit 100+ nations. $6.6T wiped on Liberation Day. No stable tariff rate anywhere. WTO effectively sidelined.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'},{label:'WTO',url:'https://www.wto.org/'}] },
-    { id:'climate', label:'Climate',       score:71, detail:'Hottest March on record globally — by widest margin ever. El Niño building again. US climate policy rollbacks accelerating.', sources:[{label:'Open-Meteo',url:'https://open-meteo.com/'},{label:'NASA GISS',url:'https://data.giss.nasa.gov/gistemp/'}] },
+    { id:'climate', label:'Climate',       score:71, detail:'Hottest March on record globally — by widest margin ever. El Nino building again. US climate policy rollbacks accelerating.', sources:[{label:'Open-Meteo',url:'https://open-meteo.com/'},{label:'NASA GISS',url:'https://data.giss.nasa.gov/gistemp/'}] },
     { id:'markets', label:'Markets',       score:65, detail:'VIX elevated. S&P 500 volatile on policy uncertainty. Fed holding rates. Business confidence cratering globally.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/quote/%5EVIX/'},{label:'FRED',url:'https://fred.stlouisfed.org/'}] },
     { id:'living',  label:'Cost of living',score:67, detail:'US CPI 2.8%. Fed rate 4.50%. Tariff pass-through hitting consumer prices. Housing unaffordable in most major cities globally.', sources:[{label:'BLS CPI',url:'https://www.bls.gov/cpi/'},{label:'FRED',url:'https://fred.stlouisfed.org/series/CPIAUCSL'}] },
   ],
@@ -710,12 +1120,12 @@ const DATA = {
 };
 
 function getColor(s) {
-  if (s >= 82) return '#e84040';
-  if (s >= 70) return '#d44030';
-  if (s >= 58) return '#f09020';
-  if (s >= 42) return '#c8b830';
-  if (s >= 25) return '#40a060';
-  return '#28906a';
+  if (s >= 82) return '#ff3333';
+  if (s >= 70) return '#e03a2a';
+  if (s >= 58) return '#ff8c00';
+  if (s >= 42) return '#e6c619';
+  if (s >= 25) return '#00cc66';
+  return '#00b386';
 }
 
 function getLabel(s) {
@@ -725,6 +1135,23 @@ function getLabel(s) {
   if (s >= 41) return 'NOT GREAT';
   if (s >= 21) return 'A BIT TENSE';
   return "WE'RE FINE";
+}
+
+function getEmoji(s) {
+  if (s >= 89) return '\u{1F525}\u{1F480}\u{1F525}';
+  if (s >= 76) return '\u{1F631}\u{1F4A5}';
+  if (s >= 61) return '\u{1F628}\u{1F4C9}';
+  if (s >= 41) return '\u{1F61F}';
+  if (s >= 21) return '\u{1F914}';
+  return '\u{1F60C}\u{2705}';
+}
+
+function getGlowClass(s) {
+  if (s >= 82) return 'score-pulse-darkred';
+  if (s >= 70) return 'score-pulse-red';
+  if (s >= 58) return 'score-pulse-orange';
+  if (s >= 42) return 'score-pulse-yellow';
+  return 'score-pulse-green';
 }
 
 function pol(cx, cy, r, deg) {
@@ -741,7 +1168,7 @@ function arcD(cx, cy, r, startDeg, sweepDeg) {
 
 function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
   setTimeout(() => {
-    const dur = 1400;
+    const dur = 1800;
     let t0 = null;
     function frame(ts) {
       if (!t0) t0 = ts;
@@ -753,17 +1180,88 @@ function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
       if (numEl) { numEl.textContent = val; numEl.style.fill = col; }
       if (progEl && sweep > 0.5) {
         progEl.setAttribute('d', arcD(cx, cy, r, 225, sweep));
-        progEl.setAttribute('stroke', col);
+        // Keep gradient stroke on main gauge
+        if (progEl.id !== 'main-prog') {
+          progEl.setAttribute('stroke', col);
+        }
       }
       if (verdictEl && p === 1) {
         verdictEl.textContent = getLabel(score);
         verdictEl.style.color = col;
+      }
+      if (p === 1) {
+        // Set emoji and glow on main gauge completion
+        if (numEl && numEl.id === 'main-num') {
+          document.getElementById('score-emoji').textContent = getEmoji(score);
+          const svg = document.getElementById('main-svg');
+          svg.style.animation = getGlowClass(score) + ' 3s ease-in-out infinite';
+          currentScore = score;
+          updateOGMeta(score);
+        }
       }
       if (p < 1) requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);
   }, delay);
 }
+
+// ── Share functions ─────────────────────────────────────────────────────────
+function getShareText(score) {
+  return `The world is currently ${score || currentScore}/100 fucked. See the live chaos index:`;
+}
+
+function shareTwitter(customText) {
+  const text = customText || getShareText();
+  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SITE_URL)}`, '_blank');
+}
+
+function shareFacebook() {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`, '_blank');
+}
+
+function shareLinkedIn() {
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`, '_blank');
+}
+
+function shareReddit() {
+  const title = `The world is ${currentScore}/100 fucked right now`;
+  window.open(`https://reddit.com/submit?url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent(title)}`, '_blank');
+}
+
+function copyLink() {
+  navigator.clipboard.writeText(SITE_URL).then(() => {
+    const btns = document.querySelectorAll('.share-btn.copy');
+    btns.forEach(btn => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Copied!';
+      btn.style.color = 'var(--green)';
+      btn.style.borderColor = 'var(--green)';
+      setTimeout(() => { btn.innerHTML = orig; btn.style.color = ''; btn.style.borderColor = ''; }, 2000);
+    });
+  });
+}
+
+function openPoll() {
+  document.getElementById('poll-overlay').classList.add('visible');
+}
+
+// Update OG meta dynamically (won't affect crawlers but updates for JS-based share previews)
+function updateOGMeta(score) {
+  const desc = `Real-time composite score across geopolitics, markets, energy, trade, climate & cost of living. Currently: ${score}/100`;
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
+  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
+}
+
+// ── Scroll animations ─────────────────────────────────────────────────────
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in-section').forEach(el => observer.observe(el));
 
 // ── Live data fetching ────────────────────────────────────────────────────
 let chartInstance = null;
@@ -777,9 +1275,9 @@ function showBanner(msg, type = 'info') {
     b.className = 'mono';
     document.body.prepend(b);
   }
-  b.style.background = type === 'live' ? '#1a3a1a' : type === 'error' ? '#3a1a1a' : '#1a1a2a';
-  b.style.color       = type === 'live' ? '#40e060' : type === 'error' ? '#e84040' : '#aaa';
-  b.style.borderBottom = `1px solid ${type === 'live' ? '#40e060' : type === 'error' ? '#e84040' : '#333'}`;
+  b.style.background = type === 'live' ? '#0a2a0a' : type === 'error' ? '#2a0a0a' : '#0a0a2a';
+  b.style.color       = type === 'live' ? '#00cc66' : type === 'error' ? '#ff3333' : '#aaa';
+  b.style.borderBottom = `1px solid ${type === 'live' ? '#00cc66' : type === 'error' ? '#ff3333' : '#333'}`;
   b.textContent = msg;
 }
 
@@ -793,20 +1291,40 @@ async function fetchLive() {
     const cur  = await curRes.json();
     const hist = await histRes.json();
     applyLiveData(cur, hist);
-    showBanner('Live data · refreshes every 15 min', 'live');
+    showBanner('Live data \u00B7 refreshes every 15 min', 'live');
   } catch (e) {
-    console.warn('Backend unavailable — using static data:', e.message);
-    showBanner('Backend offline — showing static data. Start the backend to get live scores.', 'error');
+    console.warn('Backend unavailable \u2014 using static data:', e.message);
+    showBanner('Backend offline \u2014 showing static data. Start the backend to get live scores.', 'error');
   }
 }
 
 function applyLiveData(cur, hist) {
   // ── Update main gauge ──────────────────────────────────────────────────
   const newOverall = cur.overall;
-  animateVal(newOverall, newOverall, 130, 130, 99,
+  animateVal(newOverall, newOverall, 150, 150, 114,
     document.getElementById('main-num'),
     document.getElementById('main-prog'),
     document.getElementById('main-verdict'), 0);
+
+  // ── Show score delta ──────────────────────────────────────────────────
+  if (hist && hist.length >= 2) {
+    const yesterday = hist[hist.length - 2];
+    const delta = (newOverall - yesterday.overall).toFixed(1);
+    const deltaEl = document.getElementById('score-delta');
+    if (deltaEl) {
+      deltaEl.style.display = 'inline-flex';
+      if (delta > 0) {
+        deltaEl.className = 'score-delta mono up';
+        deltaEl.innerHTML = `\u25B2 +${delta} from yesterday`;
+      } else if (delta < 0) {
+        deltaEl.className = 'score-delta mono down';
+        deltaEl.innerHTML = `\u25BC ${delta} from yesterday`;
+      } else {
+        deltaEl.className = 'score-delta mono flat';
+        deltaEl.innerHTML = `\u25CF No change from yesterday`;
+      }
+    }
+  }
 
   // Update raw readouts with links
   const r = cur.raw || {};
@@ -818,7 +1336,7 @@ function applyLiveData(cur, hist) {
       r.gold   ? `<a class="raw-link" href="https://finance.yahoo.com/quote/GC=F/" target="_blank" rel="noopener">Gold <strong>$${r.gold.toFixed(0)}</strong></a>` : '',
       r.spy    ? `<a class="raw-link" href="https://finance.yahoo.com/quote/SPY/" target="_blank" rel="noopener">S&P <strong>${r.spy.toFixed(0)}</strong></a>` : '',
       r.audusd ? `<a class="raw-link" href="https://finance.yahoo.com/quote/AUDUSD=X/" target="_blank" rel="noopener">AUD/USD <strong>${r.audusd.toFixed(4)}</strong></a>` : '',
-    ].filter(Boolean).join(' &nbsp;·&nbsp; ');
+    ].filter(Boolean).join(' &nbsp;\u00B7&nbsp; ');
   }
 
   // ── Update sub-cards ───────────────────────────────────────────────────
@@ -877,7 +1395,7 @@ setInterval(fetchLive, POLL_MS);
 // ── Timestamp ──────────────────────────────────────────────────────────────
 const now = new Date();
 document.getElementById('timestamp').textContent =
-  now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) + ' AEDT · ' +
+  now.toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'}) + ' AEDT \u00B7 ' +
   now.toLocaleDateString('en-AU', {weekday:'short', day:'numeric', month:'long', year:'numeric'});
 
 // Main gauge track
@@ -885,8 +1403,8 @@ const mTrack = document.getElementById('main-track');
 const mProg  = document.getElementById('main-prog');
 const mNum   = document.getElementById('main-num');
 const mVerdict = document.getElementById('main-verdict');
-mTrack.setAttribute('d', arcD(130, 130, 99, 225, 270));
-animateVal(DATA.overall, DATA.overall, 130, 130, 99, mNum, mProg, mVerdict, 400);
+mTrack.setAttribute('d', arcD(150, 150, 114, 225, 270));
+animateVal(DATA.overall, DATA.overall, 150, 150, 114, mNum, mProg, mVerdict, 400);
 
 // Sub-cards
 const grid = document.getElementById('sub-grid');
@@ -896,10 +1414,10 @@ DATA.categories.forEach((cat, i) => {
   const uid = `sc-${cat.id}`;
   const sourcesHtml = (cat.sources || []).map(s =>
     `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`
-  ).join(' · ');
+  ).join(' \u00B7 ');
   card.innerHTML = `
     <svg width="110" height="86" viewBox="0 0 110 110" preserveAspectRatio="xMidYMin slice" style="display:block;margin:0 auto">
-      <path d="${arcD(55,55,37,225,270)}" fill="none" stroke="#252525" stroke-width="10" stroke-linecap="round"/>
+      <path d="${arcD(55,55,37,225,270)}" fill="none" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
       <path id="p-sc-${cat.id}" d="" fill="none" stroke="${getColor(0)}" stroke-width="10" stroke-linecap="round"/>
       <text id="n-sc-${cat.id}" x="55" y="59" text-anchor="middle" dominant-baseline="middle"
         style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:700;fill:${getColor(0)}">0</text>
@@ -916,7 +1434,7 @@ DATA.categories.forEach((cat, i) => {
     null, 600 + i * 130);
 });
 
-// ── TIMELINE CHART ──────────────────────────────────────────────
+// ── TIMELINE CHART ──────────────────────────────────────────
 const TIMELINE = [
   { date:'Oct 6',  score:51, event:null },
   { date:'Oct 13', score:53, event:null },
@@ -925,7 +1443,7 @@ const TIMELINE = [
   { date:'Nov 3',  score:55, event:null },
   { date:'Nov 10', score:57, event:null },
   { date:'Nov 17', score:55, event:null },
-  { date:'Nov 24', score:53, event:'Trump reshuffles cabinet — hawkish trade appointments' },
+  { date:'Nov 24', score:53, event:'Trump reshuffles cabinet \u2014 hawkish trade appointments' },
   { date:'Dec 1',  score:54, event:null },
   { date:'Dec 8',  score:56, event:null },
   { date:'Dec 15', score:53, event:null },
@@ -936,39 +1454,39 @@ const TIMELINE = [
   { date:'Jan 19', score:60, event:null },
   { date:'Jan 26', score:63, event:null },
   { date:'Feb 2',  score:65, event:null },
-  { date:'Feb 9',  score:68, event:'Trump signs sweeping tariff executive orders — markets reel' },
+  { date:'Feb 9',  score:68, event:'Trump signs sweeping tariff executive orders \u2014 markets reel' },
   { date:'Feb 16', score:66, event:null },
   { date:'Feb 23', score:68, event:null },
   { date:'Mar 2',  score:70, event:null },
-  { date:'Mar 9',  score:74, event:'Iran closes Strait of Hormuz — global energy shock' },
+  { date:'Mar 9',  score:74, event:'Iran closes Strait of Hormuz \u2014 global energy shock' },
   { date:'Mar 16', score:73, event:null },
-  { date:'Mar 23', score:75, event:'EU announces retaliatory tariffs — trade war escalates' },
+  { date:'Mar 23', score:75, event:'EU announces retaliatory tariffs \u2014 trade war escalates' },
   { date:'Mar 30', score:74, event:null },
-  { date:'Apr 6',  score:75, event:'Liberation Day tariff anniversary — chaos escalates' },
+  { date:'Apr 6',  score:75, event:'Liberation Day tariff anniversary \u2014 chaos escalates' },
   { date:'Apr 13', score:76, event:null },
   { date:'Apr 17', score:76, event:'Today' },
 ];
 
 const KEY_EVENTS = TIMELINE.filter(d => d.event);
-const EVENT_COLOR = '#f09020';
+const EVENT_COLOR = '#ff8c00';
 
 // Build legend
 const legend = document.getElementById('events-legend');
 KEY_EVENTS.forEach(ev => {
   const pill = document.createElement('div');
-  pill.style.cssText = 'display:flex;align-items:center;gap:6px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;padding:5px 10px';
-  pill.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${ev.event === 'Today' ? '#e84040' : EVENT_COLOR};flex-shrink:0"></span>
+  pill.style.cssText = 'display:flex;align-items:center;gap:6px;background:#111111;border:1px solid #222222;border-radius:6px;padding:5px 10px';
+  pill.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${ev.event === 'Today' ? '#ff3333' : EVENT_COLOR};flex-shrink:0"></span>
     <span style="font-family:\'IBM Plex Mono\',monospace;font-size:10px;color:#888">${ev.date} 2026 &nbsp;</span>
     <span style="font-size:11px;color:#c8c8c8">${ev.event}</span>`;
   legend.appendChild(pill);
 });
 
 function scoreToColor(s) {
-  if (s >= 80) return '#e84040';
-  if (s >= 68) return '#d44030';
-  if (s >= 55) return '#f09020';
-  if (s >= 40) return '#c8b830';
-  return '#40a060';
+  if (s >= 80) return '#ff3333';
+  if (s >= 68) return '#e03a2a';
+  if (s >= 55) return '#ff8c00';
+  if (s >= 40) return '#e6c619';
+  return '#00cc66';
 }
 
 // Wait for Chart.js to load then render
@@ -983,8 +1501,8 @@ function renderChart() {
 
   // Point styles: events get bigger orange dots, "Today" gets red
   const pointRadius = TIMELINE.map(d => d.event ? (d.event === 'Today' ? 7 : 6) : 2);
-  const pointBg = TIMELINE.map(d => d.event ? (d.event === 'Today' ? '#e84040' : EVENT_COLOR) : '#888');
-  const pointBorderColor = TIMELINE.map(d => d.event ? '#0d0d0d' : 'transparent');
+  const pointBg = TIMELINE.map(d => d.event ? (d.event === 'Today' ? '#ff3333' : EVENT_COLOR) : '#888');
+  const pointBorderColor = TIMELINE.map(d => d.event ? '#080808' : 'transparent');
   const pointBorderWidth = TIMELINE.map(d => d.event ? 2 : 0);
 
   chartInstance = new Chart(ctx, {
@@ -993,15 +1511,15 @@ function renderChart() {
       labels,
       datasets: [{
         data: scores,
-        borderColor: '#e84040',
+        borderColor: '#ff3333',
         borderWidth: 2,
         backgroundColor: function(context) {
           const chart = context.chart;
           const { ctx: c, chartArea } = chart;
-          if (!chartArea) return 'rgba(232,64,64,0.15)';
+          if (!chartArea) return 'rgba(255,51,51,0.15)';
           const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-          grad.addColorStop(0, 'rgba(232,64,64,0.35)');
-          grad.addColorStop(1, 'rgba(232,64,64,0.02)');
+          grad.addColorStop(0, 'rgba(255,51,51,0.35)');
+          grad.addColorStop(1, 'rgba(255,51,51,0.02)');
           return grad;
         },
         fill: true,
@@ -1011,7 +1529,7 @@ function renderChart() {
         pointBorderColor,
         pointBorderWidth,
         pointHoverRadius: 7,
-        pointHoverBackgroundColor: '#e84040',
+        pointHoverBackgroundColor: '#ff3333',
       }]
     },
     options: {
@@ -1021,7 +1539,7 @@ function renderChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#1a1a1a',
+          backgroundColor: '#111111',
           borderColor: '#333',
           borderWidth: 1,
           titleColor: '#888',
@@ -1033,11 +1551,11 @@ function renderChart() {
             title: (items) => TIMELINE[items[0].dataIndex].date + ' 2025/26',
             label: (item) => {
               const d = TIMELINE[item.dataIndex];
-              const lines = [`Score: ${d.score}/100  →  ${getLabel(d.score)}`];
-              if (d.event && d.event !== 'Today') lines.push(`⚡ ${d.event}`);
+              const lines = [`Score: ${d.score}/100  \u2192  ${getLabel(d.score)}`];
+              if (d.event && d.event !== 'Today') lines.push(`\u26A1 ${d.event}`);
               return lines;
             },
-            labelColor: () => ({ borderColor: 'transparent', backgroundColor: '#e84040' })
+            labelColor: () => ({ borderColor: 'transparent', backgroundColor: '#ff3333' })
           }
         }
       },
@@ -1049,8 +1567,8 @@ function renderChart() {
             maxTicksLimit: 8,
             maxRotation: 0,
           },
-          grid: { color: '#1e1e1e', drawBorder: false },
-          border: { color: '#2a2a2a' }
+          grid: { color: '#1a1a1a', drawBorder: false },
+          border: { color: '#222222' }
         },
         y: {
           min: 30,
@@ -1061,8 +1579,8 @@ function renderChart() {
             stepSize: 10,
             callback: v => v
           },
-          grid: { color: '#1e1e1e', drawBorder: false },
-          border: { color: '#2a2a2a' }
+          grid: { color: '#1a1a1a', drawBorder: false },
+          border: { color: '#222222' }
         }
       }
     },
@@ -1071,9 +1589,9 @@ function renderChart() {
       beforeDraw(chart) {
         const { ctx: c, chartArea, scales: { y } } = chart;
         const lines = [
-          { val: 41, label: 'Not great', col: '#c8b830' },
-          { val: 61, label: 'Fucked',    col: '#f09020' },
-          { val: 76, label: 'Severely',  col: '#e84040' },
+          { val: 41, label: 'Not great', col: '#e6c619' },
+          { val: 61, label: 'Fucked',    col: '#ff8c00' },
+          { val: 76, label: 'Severely',  col: '#ff3333' },
         ];
         lines.forEach(({ val, label, col }) => {
           const yPx = y.getPixelForValue(val);
@@ -1098,6 +1616,7 @@ function renderChart() {
 
 renderChart();
 
+const sigList = document.getElementById('signals-list');
 DATA.signals.forEach((sig, i) => {
   const row = document.createElement('div');
   row.className = 'signal-row';
@@ -1113,11 +1632,11 @@ DATA.signals.forEach((sig, i) => {
 // ── POLL SYSTEM ───────────────────────────────────────────────────────────
 
 const POLL_COLORS = {
-  1: '#28906a', 2: '#28906a',
-  3: '#40a060', 4: '#40a060',
-  5: '#f09020', 6: '#f09020',
-  7: '#e84040', 8: '#e84040',
-  9: '#8b1a1a', 10: '#8b1a1a',
+  1: '#00b386', 2: '#00b386',
+  3: '#00cc66', 4: '#00cc66',
+  5: '#ff8c00', 6: '#ff8c00',
+  7: '#ff3333', 8: '#ff3333',
+  9: '#cc1a1a', 10: '#cc1a1a',
 };
 const POLL_COLOR_NAMES = {
   1: 'green', 2: 'green',
@@ -1137,6 +1656,36 @@ for (let i = 1; i <= 10; i++) {
   btn.dataset.color = POLL_COLOR_NAMES[i];
   btn.addEventListener('click', () => submitPollVote(i));
   pollBtnsWrap.appendChild(btn);
+}
+
+// Add seed votes to real poll data
+function addSeedVotes(data) {
+  if (!data) {
+    // Return seed data only
+    const dist = { ...SEED_VOTES };
+    let totalWeighted = 0;
+    for (let i = 1; i <= 10; i++) totalWeighted += i * dist[i];
+    return {
+      distribution: dist,
+      total: SEED_TOTAL,
+      average: totalWeighted / SEED_TOTAL
+    };
+  }
+  const dist = {};
+  let total = 0;
+  let totalWeighted = 0;
+  for (let i = 1; i <= 10; i++) {
+    const real = (data.distribution && data.distribution[i]) || 0;
+    const seeded = real + (SEED_VOTES[i] || 0);
+    dist[i] = seeded;
+    total += seeded;
+    totalWeighted += i * seeded;
+  }
+  return {
+    distribution: dist,
+    total: total,
+    average: total > 0 ? totalWeighted / total : 0
+  };
 }
 
 // Render distribution bars into a container
@@ -1170,18 +1719,25 @@ function renderPollBars(containerId, distribution, prefix) {
 
 // Update pulse section with poll data
 function updatePulseSection(data) {
+  const seeded = addSeedVotes(data);
   const section = document.getElementById('pulse-section');
-  if (!data || !data.total || data.total === 0) {
+  if (!seeded || seeded.total === 0) {
     section.style.display = 'none';
     return;
   }
   section.style.display = '';
   const avg = document.getElementById('pulse-avg');
   const total = document.getElementById('pulse-total');
-  avg.textContent = data.average.toFixed(1);
-  avg.style.color = POLL_COLORS[Math.min(10, Math.max(1, Math.round(data.average)))];
-  total.textContent = data.total.toLocaleString();
-  renderPollBars('pulse-bars', data.distribution, 'pulse');
+  const peopleSay = document.getElementById('pulse-people-score');
+  const avgColor = POLL_COLORS[Math.min(10, Math.max(1, Math.round(seeded.average)))];
+  avg.textContent = seeded.average.toFixed(1);
+  avg.style.color = avgColor;
+  total.textContent = seeded.total.toLocaleString();
+  if (peopleSay) {
+    peopleSay.textContent = (seeded.average * 10).toFixed(0) + '/100';
+    peopleSay.style.color = avgColor;
+  }
+  renderPollBars('pulse-bars', seeded.distribution, 'pulse');
 }
 
 // Fetch poll results
@@ -1199,19 +1755,28 @@ async function fetchPollResults() {
 
 // Show poll results in modal
 function showPollResults(data) {
+  const seeded = addSeedVotes(data);
   document.getElementById('poll-vote-view').style.display = 'none';
   const rv = document.getElementById('poll-results-view');
   rv.style.display = '';
-  if (data && data.total > 0) {
-    document.getElementById('poll-avg').textContent = data.average.toFixed(1);
-    document.getElementById('poll-avg').style.color = POLL_COLORS[Math.min(10, Math.max(1, Math.round(data.average)))];
-    document.getElementById('poll-total').textContent = data.total.toLocaleString();
-    renderPollBars('poll-results-bars', data.distribution, 'poll-results');
+  if (seeded && seeded.total > 0) {
+    document.getElementById('poll-avg').textContent = seeded.average.toFixed(1);
+    document.getElementById('poll-avg').style.color = POLL_COLORS[Math.min(10, Math.max(1, Math.round(seeded.average)))];
+    document.getElementById('poll-total').textContent = seeded.total.toLocaleString();
+    renderPollBars('poll-results-bars', seeded.distribution, 'poll-results');
+  }
+
+  // Set up share button
+  const shareBtn = document.getElementById('poll-share-btn');
+  if (shareBtn && userVoteScore) {
+    const text = `I voted ${userVoteScore}/10 on the Global Chaos Index. The people's average: ${seeded.average.toFixed(1)}/10. How fucked do YOU think we are?`;
+    shareBtn.href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(SITE_URL)}`;
   }
 }
 
 // Submit vote
 async function submitPollVote(score) {
+  userVoteScore = score;
   // Disable buttons
   pollBtnsWrap.querySelectorAll('.poll-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
 
@@ -1229,7 +1794,7 @@ async function submitPollVote(score) {
 
   const data = await fetchPollResults();
   showPollResults(data);
-  if (data) updatePulseSection(data);
+  updatePulseSection(data);
 }
 
 // Poll overlay controls
@@ -1251,10 +1816,10 @@ if (!sessionStorage.getItem('jhfw_voted')) {
   }, 3000);
 }
 
-// Load community pulse on page load
+// Load community pulse on page load (always show with seed data)
 (async () => {
   const data = await fetchPollResults();
-  if (data) updatePulseSection(data);
+  updatePulseSection(data);
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
