@@ -793,8 +793,7 @@ async function fetchLive() {
     const cur  = await curRes.json();
     const hist = await histRes.json();
     applyLiveData(cur, hist);
-    const ts = new Date(cur.ts + 'Z').toLocaleTimeString('en-AU', {hour:'2-digit', minute:'2-digit'});
-    showBanner(`Live data · last updated ${ts} AEDT · refreshes every 15 min`, 'live');
+    showBanner('Live data · refreshes every 15 min', 'live');
   } catch (e) {
     console.warn('Backend unavailable — using static data:', e.message);
     showBanner('Backend offline — showing static data. Start the backend to get live scores.', 'error');
