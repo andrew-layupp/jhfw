@@ -713,14 +713,18 @@ const DATA = {
     { id:'climate',   label:'Climate',         score:65, weight:10, detail:'Record wildfire season. FEMA budget slashed. Climate policy rollbacks.', sources:[{label:'NOAA',url:'https://www.noaa.gov/'}], sourceShort:'NOAA, FEMA data' },
   ],
   signals: [
-    { text:'Trump signs executive order gutting federal workforce by 30%', source:'news', category:'political' },
-    { text:'Yield curve inverted at -53bps \u2014 recession indicator flashing', source:'fred', category:'markets' },
-    { text:'US median home price hits $405,300 \u2014 affordability at historic low', source:'fred', category:'living' },
-    { text:'S&P 500 swings 2%+ intraday as tariff policy shifts', source:'yfinance', category:'markets' },
-    { text:'Weekly jobless claims tick higher as tech layoffs continue', source:'fred', category:'economy' },
-    { text:'AI expected to displace 30% of US jobs by 2030 \u2014 McKinsey', source:'news', category:'economy' },
-    { text:'Fed holds rates at 4.50% citing tariff-driven inflation risks', source:'fred', category:'markets' },
-    { text:'US Dollar Index weakening as de-dollarisation accelerates', source:'yfinance', category:'markets' },
+    { text:'Trump signs executive order gutting federal workforce by 30%', source:'news', category:'political', url:'https://www.reuters.com/world/us/' },
+    { text:'Yield curve inverted at -53bps \u2014 recession indicator flashing', source:'fred', category:'markets', url:'https://fred.stlouisfed.org/series/T10Y2Y' },
+    { text:'US median home price hits $405,300 \u2014 affordability at historic low', source:'fred', category:'living', url:'https://fred.stlouisfed.org/series/MSPUS' },
+    { text:'S&P 500 swings 2%+ intraday as tariff policy shifts hourly', source:'yfinance', category:'markets', url:'https://finance.yahoo.com/quote/SPY/' },
+    { text:'US unemployment at 4.3% \u2014 weekly jobless claims ticking higher', source:'fred', category:'economy', url:'https://fred.stlouisfed.org/series/UNRATE' },
+    { text:'AI expected to displace 30% of US jobs by 2030', source:'mckinsey', category:'economy', url:'https://www.mckinsey.com/featured-insights/future-of-work' },
+    { text:'Fed holds rates at 4.50% citing tariff-driven inflation risks', source:'fred', category:'markets', url:'https://fred.stlouisfed.org/series/FEDFUNDS' },
+    { text:'US Dollar Index weakening as global de-dollarisation accelerates', source:'yfinance', category:'markets', url:'https://finance.yahoo.com/quote/DX-Y.NYB/' },
+    { text:'Consumer confidence falls to lowest since 2022 on policy uncertainty', source:'fred', category:'economy', url:'https://fred.stlouisfed.org/series/UMCSENT' },
+    { text:'Trump tariffs hit 100+ nations \u2014 no stable trade rate anywhere', source:'reuters', category:'trade', url:'https://www.reuters.com/business/' },
+    { text:'US national debt passes $36 trillion \u2014 interest payments exceed defence budget', source:'treasury', category:'economy', url:'https://fiscaldata.treasury.gov/datasets/debt-to-the-penny/' },
+    { text:'Healthcare costs up 6% YoY \u2014 average family premium now $24,000', source:'kff', category:'living', url:'https://www.kff.org/health-costs/' },
   ]
 };
 

@@ -703,24 +703,28 @@ const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
 
 // -- AU-specific static data --
 const DATA = {
-  overall: 62,
+  overall: 70,
   categories: [
-    { id:'housing',  label:'Housing Crisis',  score:82, weight:25, detail:'Sydney median house price $1.6M. Rents up 10%+. Vacancy rate near record lows.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'SQM Research',url:'https://sqmresearch.com.au/'}], sourceShort:'ABS, SQM Research housing data' },
-    { id:'living',   label:'Cost of Living',  score:68, weight:20, detail:'CPI 3.6%. RBA cash rate 4.10%. Electricity up 20%. Insurance premiums surging.', sources:[{label:'RBA',url:'https://www.rba.gov.au/'},{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
-    { id:'jobs',     label:'Jobs & Wages',    score:45, weight:15, detail:'Unemployment 4.1%. Real wages still negative. Underemployment 6.5%.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS labour force data' },
-    { id:'climate',  label:'Climate & Disasters', score:71, weight:15, detail:'Great Barrier Reef mass bleaching event. Summer temps +2.1\u00B0C above average.', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM temperature & climate data' },
-    { id:'geo',      label:'Geopolitical',    score:55, weight:15, detail:'China trade tensions ongoing. AUKUS submarine costs blowing out. Pacific influence contested.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT event data, DFAT' },
-    { id:'markets',  label:'Markets',         score:40, weight:10, detail:'ASX volatile on global uncertainty. AUD under pressure. Iron ore demand softening.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD via yfinance' },
+    { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'$2.5T total mortgage debt. Average mortgage $600K+. Highest debt-to-income ratio in the Western world. Sydney median $1.6M. Vacancy rate 0.8% — record low. One country betting on one asset class with borrowed money.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'SQM Research',url:'https://sqmresearch.com.au/'}], sourceShort:'ABS, SQM Research, RBA housing data' },
+    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'CPI 3.6%. RBA cash rate 4.10%. Electricity up 20%. Insurance premiums surging. Energy prices through the roof — stuck between net zero and supply reality.', sources:[{label:'RBA',url:'https://www.rba.gov.au/'},{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
+    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:20, detail:'Services are 80% of the economy. Knowledge workers are 39% of the workforce — exactly the jobs AI replaces. 20% unemployment within 3-5 years is not a stretch. Real wages still negative.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, AI disruption tracking' },
+    { id:'climate',  label:'Climate & Disasters', score:71, weight:15, detail:'Great Barrier Reef worst mass bleaching on record. Summer temps +2.1\u00B0C above average. Bushfire risk escalating. Sitting on uranium but blocking nuclear.', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM temperature & climate data' },
+    { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'China trade tensions ongoing. AUKUS submarine program revised to $368B. Pacific influence contested. 95% of services pointed inward — not exporting our strengths.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT event data, DFAT' },
+    { id:'markets',  label:'Markets & Banks',  score:48, weight:10, detail:'4 of 6 biggest ASX companies are banks. CBA: $588B in home loans, business loans less than a third. We haven\u2019t just poured money into property \u2014 we\u2019ve built the entire economy around servicing it.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD via yfinance' },
   ],
   signals: [
-    { text:'Sydney median house price hits $1.62M \u2014 up 7.2% YoY', source:'realestate.com.au', category:'housing' },
-    { text:'RBA holds cash rate at 4.10% \u2014 signals \u201Cdata dependent\u201D stance', source:'rba', category:'living' },
-    { text:'Great Barrier Reef suffers worst mass bleaching on record', source:'bom', category:'climate' },
-    { text:'Coles and Woolworths face Senate inquiry over pricing practices', source:'news', category:'living' },
-    { text:'Australia-China trade relations thaw as diplomatic talks resume', source:'gdelt', category:'geopolitics' },
-    { text:'Iron ore drops below $100/tonne on China demand concerns', source:'yfinance', category:'markets' },
-    { text:'National rental vacancy rate hits 0.8% \u2014 lowest on record', source:'sqm', category:'housing' },
-    { text:'AUKUS submarine program cost estimate revised to $368B', source:'news', category:'geopolitics' },
+    { text:'$2.5 trillion in mortgage debt \u2014 average $600K per household. Highest debt-to-income ratio in the Western world.', source:'rba', category:'housing', url:'https://www.rba.gov.au/statistics/tables/' },
+    { text:'Sydney median house price hits $1.62M \u2014 up 7.2% YoY while wages grew 3.2%', source:'abs', category:'housing', url:'https://www.abs.gov.au/' },
+    { text:'Services are 80% of the economy. 39% of workers do knowledge jobs AI can replace.', source:'abs', category:'jobs', url:'https://www.abs.gov.au/statistics/labour' },
+    { text:'4 of 6 biggest ASX companies are banks. CBA holds $588B in home loans alone.', source:'asx', category:'markets', url:'https://www.asx.com.au/' },
+    { text:'RBA holds cash rate at 4.10% \u2014 signals \u201Cdata dependent\u201D stance', source:'rba', category:'living', url:'https://www.rba.gov.au/monetary-policy/' },
+    { text:'Great Barrier Reef suffers worst mass bleaching on record', source:'bom', category:'climate', url:'http://www.bom.gov.au/climate/' },
+    { text:'National rental vacancy rate hits 0.8% \u2014 lowest on record', source:'sqm', category:'housing', url:'https://sqmresearch.com.au/graph_vacancy.php' },
+    { text:'AI architect tool reduces tendering cost by 90% \u2014 junior roles disappearing', source:'news', category:'jobs' },
+    { text:'Electricity up 20% YoY. Energy stuck in no man\u2019s land between net zero and supply.', source:'aer', category:'living', url:'https://www.aer.gov.au/' },
+    { text:'AUKUS submarine program cost estimate revised to $368B', source:'defence', category:'geopolitics' },
+    { text:'Iron ore drops below $100/tonne on China demand concerns', source:'yfinance', category:'markets', url:'https://finance.yahoo.com/quote/BHP.AX/' },
+    { text:'Coles and Woolworths face Senate inquiry over supermarket pricing practices', source:'news', category:'living' },
   ]
 };
 
