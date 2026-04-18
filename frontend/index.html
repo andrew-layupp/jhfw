@@ -364,6 +364,23 @@
   .gauge-wrap { display: flex; flex-direction: column; align-items: center; margin: 24px 0 10px; }
   .gauge-label-wrap { text-align: center; margin-top: -12px; position: relative; z-index: 2; }
   .gauge-verdict { font-size: clamp(22px, 4vw, 38px); line-height: 1; }
+
+  /* Live pulsating scores */
+  @keyframes score-live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+  .score-live {
+    animation: score-live-pulse 3s ease-in-out infinite;
+  }
+  .score-tick-up {
+    animation: tick-flash 0.6s ease;
+  }
+  @keyframes tick-flash {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.15); filter: brightness(1.3); }
+    100% { transform: scale(1); filter: brightness(1); }
+  }
   .score-emoji { font-size: clamp(18px, 3vw, 28px); margin-top: 4px; display: block; }
 
   @keyframes score-pulse-green {
@@ -1273,24 +1290,73 @@ async function submitInlinePollVote(level) {
   updateMainScoreFromPoll(pd);
 }
 
-function updateMainScoreFromPoll(pd) {
+let lastPollTotal = 0;
+let lastPollAvg = 0;
+
+function smoothTickCount(el, from, to, duration) {
+  if (from === to) return;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / duration, 1);
+    const val = Math.round(from + (to - from) * p);
+    el.textContent = val.toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function updateMainScoreFromPoll(pd, animate) {
   if (pd.avg100 <= 0) return;
   const newScore = Math.round(pd.avg100);
-  const mNum = document.getElementById('main-num');
-  const mProg = document.getElementById('main-prog');
-  const mVerdict = document.getElementById('main-verdict');
-  animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 200);
-  currentScore = newScore;
-  document.getElementById('poll-count').textContent = pd.total.toLocaleString();
+
+  // Smooth tick the vote count
+  const countEl = document.getElementById('poll-count');
+  if (animate && pd.total !== lastPollTotal) {
+    smoothTickCount(countEl, lastPollTotal, pd.total, 800);
+    countEl.classList.add('score-tick-up');
+    setTimeout(() => countEl.classList.remove('score-tick-up'), 600);
+  } else {
+    countEl.textContent = pd.total.toLocaleString();
+  }
+
+  // Animate main score if changed
+  if (newScore !== currentScore) {
+    const mNum = document.getElementById('main-num');
+    const mProg = document.getElementById('main-prog');
+    const mVerdict = document.getElementById('main-verdict');
+    animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 200);
+    if (animate) {
+      mNum.classList.add('score-tick-up');
+      setTimeout(() => mNum.classList.remove('score-tick-up'), 600);
+    }
+    currentScore = newScore;
+  }
+
+  lastPollTotal = pd.total;
+  lastPollAvg = pd.avg100;
 }
+
+// Make scores pulsate to look live
+document.addEventListener('DOMContentLoaded', () => {
+  const mainNum = document.getElementById('main-num');
+  if (mainNum) mainNum.classList.add('score-live');
+});
 
 // On load: update count and main score from poll
 (async () => {
   const data = await fetchPollResults();
   const pd = computePollData(data);
-  document.getElementById('poll-count').textContent = pd.total.toLocaleString();
-  updateMainScoreFromPoll(pd);
+  updateMainScoreFromPoll(pd, false);
 })();
+
+// Poll every 10 seconds for live updates from other voters
+setInterval(async () => {
+  try {
+    const data = await fetchPollResults();
+    const pd = computePollData(data);
+    updateMainScoreFromPoll(pd, true);
+  } catch (e) {}
+}, 2000);
 
 // -- NEWS SECTION --
 const NEWS_FACTOR_ICONS = {
