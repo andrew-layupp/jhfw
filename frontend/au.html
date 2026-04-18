@@ -9,22 +9,22 @@
   window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
   plausible.init()
 </script>
-<title>How fucked are we? — Fucked Index</title>
-<meta name="description" content="The fucked index, as voted on by the Australian public.">
+<title>How fucked are we? - The Fucked Index&#8482;</title>
+<meta name="description" content="The Fucked Index™, as voted on by the Australian public.">
 <link rel="canonical" href="https://howfuckedarewe.help">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇦🇺</text></svg>">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://howfuckedarewe.help">
-<meta property="og:title" content="How fucked are we? — Fucked Index">
-<meta property="og:description" content="The fucked index, as voted on by the Australian public.">
+<meta property="og:title" content="How fucked are we? - The Fucked Index™">
+<meta property="og:description" content="The Fucked Index™, as voted on by the Australian public.">
 <meta property="og:site_name" content="Just How Fucked Are We?">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="How fucked are we? — Fucked Index">
-<meta name="twitter:description" content="The fucked index, as voted on by the Australian public.">
+<meta name="twitter:title" content="How fucked are we? - The Fucked Index™">
+<meta name="twitter:description" content="The Fucked Index™, as voted on by the Australian public.">
 
 <!-- JSON-LD Structured Data -->
 <script type="application/ld+json">
@@ -33,7 +33,7 @@
   "@type": "WebApplication",
   "name": "How Fucked Is Australia?",
   "url": "https://howfuckedarewe.help",
-  "description": "Real-time fucked index for Australia tracking housing, cost of living, jobs, climate, geopolitics and markets.",
+  "description": "The Fucked Index™, as voted on by the Australian public.",
   "applicationCategory": "News",
   "operatingSystem": "Any",
   "offers": {
@@ -725,7 +725,7 @@
       <div class="hero">
         <h1 class="bbn site-title">How fucked are we? &#127462;&#127482;</h1>
         <p class="mono tagline">
-          The fucked index, as voted on by the Australian public.
+          The Fucked Index™, as voted on by the Australian public.
         </p>
       </div>
 
@@ -831,7 +831,7 @@
 
     <!-- Share section (outside main-col for mobile reordering) -->
     <div class="share-section fade-in-section" id="share-section" style="width:100%">
-      <h3 class="mono">Get your mates to vote — share the fucked index</h3>
+      <h3 class="mono">Get your mates to vote — share the Fucked Index™</h3>
         <div class="share-buttons">
           <button class="share-btn twitter" onclick="shareTwitter()">
             <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -1057,7 +1057,7 @@ function copyLink() {
 }
 
 function updateOGMeta(score) {
-  const desc = `Australia fucked index: ${score}/100. Housing, cost of living, jobs, climate, geopolitics & markets.`;
+  const desc = `The Fucked Index™: Australia is ${score}/100 fucked, as voted on by the Australian public.`;
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
 }
@@ -1529,7 +1529,7 @@ function renderSidebarNews(factors) {
     renderSidebarNews(factors);
     // Update header indicator
     const indicator = document.getElementById('live-analysis-indicator');
-    if (indicator) indicator.textContent = 'Live data and news analysis';
+    if (indicator) indicator.textContent = 'Live';
   } catch (e) {
     console.warn('News fetch failed:', e.message);
   }
