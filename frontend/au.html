@@ -150,7 +150,10 @@
   .layout { display: flex; gap: 28px; }
   .main-col { flex: 1; min-width: 0; }
   .sidebar-col { width: 340px; flex-shrink: 0; }
-  .sidebar-inner { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; }
+  .sidebar-inner { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; }
+  .sidebar-inner::-webkit-scrollbar { width: 4px; }
+  .sidebar-inner::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
   .sidebar-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -719,23 +722,23 @@
       <div class="scale-bar">
         <div class="scale-seg">
           <div class="scale-line" style="background:#00b386"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">She'll be right</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Not</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#7ab800"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Bit dodge</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Slightly</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#ff8c00"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Gone to shit</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Properly</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#ff3333"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Fucked</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Royally</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#8b1a1a"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Cooked</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Absolutely</div>
         </div>
       </div>
 
@@ -827,11 +830,11 @@ let userVoteScore = null;
 
 // 5-bucket config
 const BUCKETS = [
-  { label: "She'll be right", color: '#00b386', backendScores: [1, 2] },
-  { label: 'Bit dodge',      color: '#7ab800', backendScores: [3, 4] },
-  { label: 'Gone to shit',   color: '#ff8c00', backendScores: [5, 6] },
-  { label: 'Fucked',         color: '#ff3333', backendScores: [7, 8] },
-  { label: 'Cooked',         color: '#8b1a1a', backendScores: [9, 10] },
+  { label: 'Not',        color: '#00b386', backendScores: [1, 2] },
+  { label: 'Slightly',   color: '#7ab800', backendScores: [3, 4] },
+  { label: 'Properly',   color: '#ff8c00', backendScores: [5, 6] },
+  { label: 'Royally',    color: '#ff3333', backendScores: [7, 8] },
+  { label: 'Absolutely', color: '#8b1a1a', backendScores: [9, 10] },
 ];
 
 const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
@@ -873,11 +876,11 @@ function getColor(s) {
 }
 
 function getLabel(s) {
-  if (s >= 80) return 'COOKED';
-  if (s >= 60) return 'FUCKED';
-  if (s >= 40) return 'GONE TO SHIT';
-  if (s >= 20) return 'BIT DODGE';
-  return "SHE'LL BE RIGHT";
+  if (s >= 80) return 'ABSOLUTELY';
+  if (s >= 60) return 'ROYALLY';
+  if (s >= 40) return 'PROPERLY';
+  if (s >= 20) return 'SLIGHTLY';
+  return 'NOT';
 }
 
 function getEmoji(s) {
@@ -1144,7 +1147,7 @@ function showPollResults(data) {
   resultsArea.innerHTML = `
     <div class="poll-results">
       <div class="poll-results-avg mono" style="color:${avgColor}">${Math.round(pd.avg100)} / 100</div>
-      <div class="poll-results-avg-label mono">The people reckon</div>
+      <div class="poll-results-avg-label mono">The people reckon we're ${pd.avg100 >= 80 ? 'absolutely' : pd.avg100 >= 60 ? 'royally' : pd.avg100 >= 40 ? 'properly' : pd.avg100 >= 20 ? 'slightly' : 'not'} fucked</div>
       <div class="poll-results-bars">${barsHtml}</div>
       <div class="poll-results-total mono">${pd.total.toLocaleString()} total votes</div>
     </div>`;
@@ -1344,11 +1347,11 @@ const SEVERITY_WEIGHTS = {
 
 function updateAlbo(score) {
   const levels = [
-    { max: 20, gif: '/images/albo_cooked.gif', caption: "She'll be right, mate", sub: "Albo is calm" },
-    { max: 40, gif: '/images/albo_cooked.gif', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
-    { max: 60, gif: '/images/albo_cooked.gif', caption: "Yeah nah, gone to shit", sub: "Albo is stressed" },
-    { max: 80, gif: '/images/albo_cooked.gif', caption: "We're properly fucked here", sub: "Albo is losing it" },
-    { max: 100, gif: '/images/albo_cooked.gif', caption: "Completely and utterly cooked", sub: "Albo has given up" },
+    { max: 20, gif: '/images/albo_cooked.gif', caption: "Not fucked", sub: "Albo reckons we're sweet" },
+    { max: 40, gif: '/images/albo_cooked.gif', caption: "Slightly fucked", sub: "Albo's getting a bit worried" },
+    { max: 60, gif: '/images/albo_cooked.gif', caption: "Properly fucked", sub: "Albo's sweating" },
+    { max: 80, gif: '/images/albo_cooked.gif', caption: "Royally fucked", sub: "Albo's lost the plot" },
+    { max: 100, gif: '/images/albo_cooked.gif', caption: "Absolutely fucked", sub: "Albo has given up" },
   ];
   const level = levels.find(l => score <= l.max) || levels[4];
   const img = document.getElementById('albo-gif');
