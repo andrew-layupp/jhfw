@@ -1053,7 +1053,7 @@ DATA.categories.forEach((cat, i) => {
   ).join(' \u00B7 ');
   const DIM_VOTE_COLORS = ['#00b386','#7ab800','#ff8c00','#ff3333','#8b1a1a'];
   const DIM_VOTE_LABELS = ['Not','Slightly','Properly','Royally','Absolutely'];
-  const DIM_VOTE_SCORES = [10, 30, 50, 70, 90];
+  const DIM_VOTE_SCORES = [20, 40, 60, 80, 100];
   const dimBtnsHtml = DIM_VOTE_LABELS.map((lbl, vi) =>
       `<button class="dim-vote-btn" data-dim="${cat.id}" data-score="${DIM_VOTE_SCORES[vi]}" style="border-color:${DIM_VOTE_COLORS[vi]}44;color:${DIM_VOTE_COLORS[vi]}">${lbl}</button>`
     ).join('');
