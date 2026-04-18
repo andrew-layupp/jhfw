@@ -661,7 +661,9 @@
 
       <!-- Albo mood indicator -->
       <div class="albo-hero" id="albo-hero">
-        <img src="/images/1_fine.png" id="albo-gif" alt="Albo's mood">
+        <video id="albo-video" autoplay muted loop playsinline style="display:block;width:100%;height:auto">
+          <source src="/images/albo_fucked.mp4" type="video/mp4">
+        </video>
         <div class="albo-caption">
           <div class="albo-caption-text" id="albo-caption-text">Loading...</div>
           <div class="albo-caption-sub mono" id="albo-caption-sub">based on live chaos index</div>
@@ -1365,18 +1367,19 @@ const SEVERITY_WEIGHTS = {
 
 function updateAlbo(score) {
   const levels = [
-    { max: 20, gif: null, caption: "She'll be right, mate", sub: "Albo is calm" },
-    { max: 40, gif: '/images/gifs/morph_1_2.gif', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
-    { max: 60, gif: '/images/gifs/morph_1_3.gif', caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
-    { max: 80, gif: '/images/gifs/morph_1_4.gif', caption: "We're properly fucked here", sub: "Albo is losing it" },
-    { max: 100, gif: '/images/gifs/morph_1_5.gif', caption: "Completely and utterly cooked", sub: "Albo has given up" },
+    { max: 20, video: '/images/albo_fine.mp4', caption: "She'll be right, mate", sub: "Albo is calm" },
+    { max: 40, video: '/images/albo_tense.mp4', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
+    { max: 60, video: '/images/albo_notgreat.mp4', caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
+    { max: 80, video: '/images/albo_fucked.mp4', caption: "We're properly fucked here", sub: "Albo is losing it" },
+    { max: 100, video: '/images/albo_cooked.mp4', caption: "Completely and utterly cooked", sub: "Albo has given up" },
   ];
   const level = levels.find(l => score <= l.max) || levels[4];
-  const img = document.getElementById('albo-gif');
+  const vid = document.getElementById('albo-video');
 
-  if (level.gif) {
-    // Add cache-buster so the GIF replays from the start
-    img.src = level.gif + '?t=' + Date.now();
+  if (vid && level.video) {
+    vid.src = level.video;
+    vid.load();
+    vid.play().catch(() => {});
   }
 
   document.getElementById('albo-caption-text').textContent = level.caption;
