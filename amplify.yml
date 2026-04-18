@@ -14,7 +14,6 @@ frontend:
             echo "Injecting BACKEND_URL: $BACKEND_URL"
             sed -i "s|http://localhost:8000|${BACKEND_URL}|g" build/index.html
             sed -i "s|http://localhost:8000|${BACKEND_URL}|g" build/au.html
-            sed -i "s|http://localhost:8000|${BACKEND_URL}|g" build/us.html
           else
             echo "BACKEND_URL not set — frontend will use localhost fallback"
           fi
@@ -26,5 +25,3 @@ frontend:
     paths: []
   # NOTE: Amplify rewrite rules needed (set via Amplify Console > Rewrites and redirects):
   #   /au  ->  /au.html   (200 rewrite)
-  #   /us  ->  /us.html   (200 rewrite)
-  # Or use customHeaders in Amplify console. The files also work at /au.html and /us.html directly.

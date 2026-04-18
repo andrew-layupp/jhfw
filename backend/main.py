@@ -158,31 +158,6 @@ async def au_scrapboard_factor(factor_id: str):
         raise HTTPException(500, str(e))
 
 
-@app.get("/api/us/scrapboard")
-async def us_scrapboard():
-    """Fetch live news for each US chaos factor via Claude web search."""
-    from collectors.us_scrapboard import fetch_all_factors
-    try:
-        results = await fetch_all_factors()
-        return JSONResponse(results)
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-
-@app.get("/api/us/scrapboard/{factor_id}")
-async def us_scrapboard_factor(factor_id: str):
-    """Fetch news for a single US chaos factor."""
-    from collectors.us_scrapboard import FACTORS, fetch_factor
-    factor = next((f for f in FACTORS if f["id"] == factor_id), None)
-    if not factor:
-        raise HTTPException(404, f"Unknown factor: {factor_id}")
-    try:
-        result = await fetch_factor(factor)
-        return JSONResponse(result)
-    except Exception as e:
-        raise HTTPException(500, str(e))
-
-
 @app.get("/api/refresh")
 async def force_refresh():
     """Manually trigger a data refresh (useful for testing)."""

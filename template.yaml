@@ -236,78 +236,6 @@ Resources:
             Path: /api/au/news
             Method: GET
 
-  # ── US Scrapboard Functions ──────────────────────────────────────────────────
-
-  UsScrapboardFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: jhfw-us-scrapboard
-      CodeUri: lambdas/us_scrapboard/
-      Handler: handler.lambda_handler
-      Description: GET /api/us/scrapboard — Claude web search for US chaos factors
-      Timeout: 300
-      MemorySize: 512
-      Events:
-        GetScrapboard:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/us/scrapboard
-            Method: GET
-        GetScrapboardFactor:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/us/scrapboard/{factor_id}
-            Method: GET
-
-  UsScrapboardCacheFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: jhfw-us-scrapboard-cache
-      CodeUri: lambdas/us_scrapboard/
-      Handler: handler.cache_handler
-      Description: Scheduled every 6h — runs Claude web search and caches US results in DynamoDB
-      Timeout: 900
-      MemorySize: 1024
-      Environment:
-        Variables:
-          CLAUDE_API_KEY: '{{resolve:ssm:/jhfw/claude-api-key}}'
-          US_SCRAPBOARD_TABLE: !Ref UsScrapboardTable
-      Policies:
-        - DynamoDBCrudPolicy:
-            TableName: !Ref UsScrapboardTable
-      Events:
-        ScheduledRefresh:
-          Type: Schedule
-          Properties:
-            Schedule: rate(6 hours)
-            Description: Refresh US scrapboard news cache every 6 hours
-            Enabled: true
-
-  UsScrapboardReadFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: jhfw-us-scrapboard-read
-      CodeUri: lambdas/us_scrapboard/
-      Handler: handler.read_handler
-      Description: GET /api/us/news — reads cached US scrapboard from DynamoDB (instant)
-      Timeout: 10
-      MemorySize: 256
-      Environment:
-        Variables:
-          US_SCRAPBOARD_TABLE: !Ref UsScrapboardTable
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsScrapboardTable
-      Events:
-        GetCachedNews:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /api/us/news
-            Method: GET
-
   # ── DynamoDB Tables ───────────────────────────────────────────────────────────
 
   SnapshotsTable:
@@ -362,17 +290,6 @@ Resources:
         - AttributeName: factor_id
           KeyType: HASH
 
-  UsScrapboardTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: jhfw-us-scrapboard
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: factor_id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: factor_id
-          KeyType: HASH
 
   # ── Lambda Layers ─────────────────────────────────────────────────────────────
 
