@@ -588,19 +588,20 @@
   /* Vote ticker */
   .vote-ticker {
     overflow: hidden;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 0;
-    margin-bottom: 20px;
+    background: rgba(17,17,17,0.97);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border);
+    padding: 10px 0;
     white-space: nowrap;
-    position: relative;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 8000;
   }
   .vote-ticker::before, .vote-ticker::after {
-    content: ''; position: absolute; top: 0; bottom: 0; width: 40px; z-index: 2; pointer-events: none;
+    content: ''; position: absolute; top: 0; bottom: 0; width: 60px; z-index: 2; pointer-events: none;
   }
-  .vote-ticker::before { left: 0; background: linear-gradient(90deg, var(--surface), transparent); }
-  .vote-ticker::after { right: 0; background: linear-gradient(270deg, var(--surface), transparent); }
+  .vote-ticker::before { left: 0; background: linear-gradient(90deg, rgba(17,17,17,0.97), transparent); }
+  .vote-ticker::after { right: 0; background: linear-gradient(270deg, rgba(17,17,17,0.97), transparent); }
   .vote-ticker-track {
     display: inline-flex; gap: 40px; padding: 0 20px;
     animation: ticker-scroll var(--ticker-duration, 40s) linear infinite;
@@ -805,11 +806,6 @@
     </div>
   </div>
 
-  <!-- Live vote ticker -->
-  <div class="vote-ticker" id="vote-ticker" style="display:none">
-    <div class="vote-ticker-track" id="vote-ticker-track"></div>
-  </div>
-
   <div class="layout">
     <!-- Main content column -->
     <div class="main-col">
@@ -963,6 +959,11 @@
 
   </div><!-- end layout -->
 
+</div>
+
+<!-- Live vote ticker — fixed to bottom -->
+<div class="vote-ticker" id="vote-ticker" style="display:none">
+  <div class="vote-ticker-track" id="vote-ticker-track"></div>
 </div>
 
 <script>
@@ -1392,22 +1393,38 @@ async function fetchPollResults() {
   }
 }
 
+let followUpActive = false; // pause 2s poll refresh while follow-up is showing
+
 async function submitInlinePollVote(level) {
   userVoteScore = level;
-  // Optimistically update counter immediately
-  const countEl = document.getElementById('poll-count');
-  const currentCount = parseInt(countEl.textContent.replace(/,/g, ''), 10) || 0;
-  smoothTickCount(countEl, currentCount, currentCount + 1, 400);
-  countEl.classList.add('score-tick-up');
-  setTimeout(() => countEl.classList.remove('score-tick-up'), 600);
+  const backendScore = BUCKET_TO_BACKEND[level];
+  followUpActive = true;
 
-  // Don't POST yet — show follow-up first
+  // Disable buttons, highlight selected
   pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => {
     b.disabled = true; b.style.opacity = '0.3';
   });
-  // Highlight selected
   const selected = pollBtnsWrap.querySelector(`[data-level="${level}"]`);
   if (selected) { selected.style.opacity = '1'; selected.style.transform = 'scale(1.05)'; }
+
+  // POST score immediately so counter sticks
+  try {
+    await fetch(`${BACKEND_URL}/api/poll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ score: backendScore, country: COUNTRY }),
+    });
+  } catch (e) {
+    console.warn('Poll submit failed:', e.message);
+  }
+  sessionStorage.setItem('jhfw_voted', '1');
+
+  // Fetch updated results so counter reflects real data
+  const data = await fetchPollResults();
+  const pd = computePollData(data);
+  updateMainScoreFromPoll(pd, true);
+
+  // Now show the follow-up
   showFollowUp();
 }
 
@@ -1439,48 +1456,33 @@ async function submitFactors() {
   const reason = document.querySelector('.poll-reason-input')?.value?.trim() || null;
   const backendScore = BUCKET_TO_BACKEND[userVoteScore];
 
-  try {
-    await fetch(`${BACKEND_URL}/api/poll`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        score: backendScore, country: COUNTRY,
-        factors: factors.length ? factors : null,
-        reason: reason || null
-      }),
-    });
-  } catch (e) {
-    console.warn('Poll submit failed:', e.message);
+  // POST as metadata_only — stored for ticker but not counted in poll
+  if (factors.length || reason) {
+    try {
+      await fetch(`${BACKEND_URL}/api/poll`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          score: backendScore, country: COUNTRY,
+          factors: factors.length ? factors : null,
+          reason: reason || null,
+          metadata_only: true
+        }),
+      });
+    } catch (e) {
+      console.warn('Factor submit failed:', e.message);
+    }
   }
 
-  sessionStorage.setItem('jhfw_voted', '1');
   document.getElementById('poll-followup').style.display = 'none';
+  followUpActive = false;
+  loadTicker();
 
+  // Flash results briefly
   const data = await fetchPollResults();
   showPollResults(data);
   const pd = computePollData(data);
-  updateMainScoreFromPoll(pd);
-  loadTicker(); // refresh ticker with new vote
-}
-
-async function skipFactors() {
-  const backendScore = BUCKET_TO_BACKEND[userVoteScore];
-  try {
-    await fetch(`${BACKEND_URL}/api/poll`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ score: backendScore, country: COUNTRY }),
-    });
-  } catch (e) {
-    console.warn('Poll submit failed:', e.message);
-  }
-  sessionStorage.setItem('jhfw_voted', '1');
-  document.getElementById('poll-followup').style.display = 'none';
-
-  const data = await fetchPollResults();
-  showPollResults(data);
-  const pd = computePollData(data);
-  updateMainScoreFromPoll(pd);
+  updateMainScoreFromPoll(pd, true);
 }
 
 let lastPollTotal = 0;
@@ -1559,7 +1561,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Poll every 2 seconds for live updates (pauses when tab hidden)
 setInterval(async () => {
-  if (document.hidden) return;
+  if (document.hidden || followUpActive) return;
   try {
     const data = await fetchPollResults();
     const pd = computePollData(data);

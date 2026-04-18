@@ -84,6 +84,9 @@ def _submit_vote(event):
         reason = body.get("reason")
         if reason and isinstance(reason, str):
             item["reason"] = reason[:140]
+        # metadata_only votes are stored for the ticker but not counted in poll results
+        if body.get("metadata_only"):
+            item["metadata_only"] = True
 
         table = _get_table()
         table.put_item(Item=item)
@@ -110,9 +113,12 @@ def _get_results(event):
 
         # Count votes filtered by country
         # Votes without a country field are treated as 'au' (legacy)
+        # Skip metadata_only votes (factor follow-ups stored for ticker only)
         distribution = {}
         total = 0
         for item in items:
+            if item.get("metadata_only"):
+                continue
             item_country = item.get("country", "au")
             if item_country != country:
                 continue

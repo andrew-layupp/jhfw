@@ -103,6 +103,7 @@ class PollVote(BaseModel):
     country: str = Field(default="au")
     factors: list[str] = Field(default=None)
     reason: str = Field(default=None, max_length=140)
+    metadata_only: bool = Field(default=False)
 
 
 @app.post("/api/poll")
@@ -113,7 +114,8 @@ async def submit_poll(vote: PollVote, request: Request):
         ip_hash = hashlib.sha256(request.client.host.encode()).hexdigest()[:16]
     country = vote.country.lower().strip() if vote.country in ("au", "us") else "au"
     await db.insert_poll_vote(vote.score, ip_hash, country,
-                              factors=vote.factors, reason=vote.reason)
+                              factors=vote.factors, reason=vote.reason,
+                              metadata_only=vote.metadata_only)
     return {"status": "ok"}
 
 
