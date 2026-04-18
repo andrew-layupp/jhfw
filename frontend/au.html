@@ -281,16 +281,28 @@
   }
 
   /* Hero */
-  /* Albo mood hero */
+  /* Hero layout: Albo + Score side by side */
+  .hero-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 16px;
+    justify-content: center;
+  }
+  @media (max-width: 768px) {
+    .hero-row { flex-direction: column; gap: 12px; }
+  }
   .albo-hero {
     position: relative;
-    width: 100%;
-    max-width: 500px;
-    margin: 0 auto 20px;
+    width: 280px;
+    flex-shrink: 0;
     border-radius: 16px;
     overflow: hidden;
     border: 1px solid var(--border);
     box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  @media (max-width: 768px) {
+    .albo-hero { width: 100%; max-width: 320px; }
   }
   .albo-hero img {
     display: block;
@@ -300,18 +312,18 @@
   .albo-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    padding: 20px 16px 14px;
+    padding: 14px 12px 10px;
     background: linear-gradient(transparent, rgba(0,0,0,0.85));
     text-align: center;
   }
   .albo-caption-text {
-    font-size: 13px;
+    font-size: 12px;
     color: #fff;
     font-weight: 600;
     text-shadow: 0 1px 4px rgba(0,0,0,0.6);
   }
   .albo-caption-sub {
-    font-size: 10px;
+    font-size: 9px;
     color: rgba(255,255,255,0.6);
     margin-top: 2px;
   }
@@ -653,17 +665,6 @@
     <!-- Main content column -->
     <div class="main-col">
 
-      <!-- Albo mood indicator -->
-      <div class="albo-hero" id="albo-hero">
-        <video id="albo-video" autoplay muted loop playsinline style="display:block;width:100%;height:auto">
-          <source src="/images/albo_fucked.mp4" type="video/mp4">
-        </video>
-        <div class="albo-caption">
-          <div class="albo-caption-text" id="albo-caption-text">Loading...</div>
-          <div class="albo-caption-sub mono" id="albo-caption-sub">based on live chaos index</div>
-        </div>
-      </div>
-
       <!-- Hero -->
       <div class="hero">
         <h1 class="bbn site-title">How fucked are we? &#127462;&#127482;</h1>
@@ -672,8 +673,19 @@
         </p>
       </div>
 
-      <!-- Main gauge -->
-      <div class="gauge-wrap">
+      <!-- Albo + Score side by side -->
+      <div class="hero-row">
+        <!-- Albo GIF -->
+        <div class="albo-hero" id="albo-hero">
+          <img src="/images/albo_cooked.gif" id="albo-gif" alt="Albo's mood">
+          <div class="albo-caption">
+            <div class="albo-caption-text" id="albo-caption-text">Loading...</div>
+            <div class="albo-caption-sub mono" id="albo-caption-sub">based on live chaos index</div>
+          </div>
+        </div>
+
+        <!-- Main gauge -->
+        <div class="gauge-wrap" style="margin:0">
         <svg id="main-svg" width="300" height="234" viewBox="0 0 300 300" preserveAspectRatio="xMidYMin slice" style="display:block">
           <defs>
             <filter id="glow-r">
@@ -701,6 +713,7 @@
           <div id="live-analysis-indicator" style="display:none"></div>
         </div>
       </div>
+      </div><!-- end hero-row -->
 
       <!-- Scale bar -->
       <div class="scale-bar">
@@ -827,12 +840,13 @@ const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
 const DATA = {
   overall: 70,
   categories: [
-    { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'$2.5T total mortgage debt. Average mortgage $600K+. Highest debt-to-income ratio in the Western world. Sydney median $1.6M. Vacancy rate 0.8% — record low. One country betting on one asset class with borrowed money.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'SQM Research',url:'https://sqmresearch.com.au/'}], sourceShort:'ABS, SQM Research, RBA housing data' },
-    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'CPI 3.6%. RBA cash rate 4.10%. Electricity up 20%. Insurance premiums surging. Energy prices through the roof — stuck between net zero and supply reality.', sources:[{label:'RBA',url:'https://www.rba.gov.au/'},{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
-    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:20, detail:'Services are 80% of the economy. Knowledge workers are 39% of the workforce — exactly the jobs AI replaces. 20% unemployment within 3-5 years is not a stretch. Real wages still negative.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, AI disruption tracking' },
-    { id:'climate',  label:'Climate & Disasters', score:71, weight:15, detail:'Great Barrier Reef worst mass bleaching on record. Summer temps +2.1\u00B0C above average. Bushfire risk escalating. Sitting on uranium but blocking nuclear.', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM temperature & climate data' },
-    { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'China trade tensions ongoing. AUKUS submarine program revised to $368B. Pacific influence contested. 95% of services pointed inward — not exporting our strengths.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT event data, DFAT' },
-    { id:'markets',  label:'Markets & Banks',  score:48, weight:10, detail:'4 of 6 biggest ASX companies are banks. CBA: $588B in home loans, business loans less than a third. We haven\u2019t just poured money into property \u2014 we\u2019ve built the entire economy around servicing it.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD via yfinance' },
+    { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'Scored high because $2.5T in mortgage debt, record-low vacancy (0.8%), and Sydney median at $1.6M make Australia the most housing-exposed economy in the developed world.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'SQM Research',url:'https://sqmresearch.com.au/'}], sourceShort:'ABS, SQM Research, RBA' },
+    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'CPI at 3.6% with RBA holding at 4.10%. Electricity, insurance and groceries are all surging. Wages aren\u2019t keeping up and the average household is going backwards in real terms.', sources:[{label:'RBA',url:'https://www.rba.gov.au/'},{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
+    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:15, detail:'Unemployment steady at 4.3% but the real risk is structural: 80% services economy with 39% knowledge workers directly exposed to AI displacement. Tech layoffs already accelerating.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, GDELT' },
+    { id:'ai',       label:'AI Disruption',   score:75, weight:15, detail:'AI is already replacing junior roles in architecture, accounting, and legal. Australia\u2019s services-heavy economy is uniquely exposed. Every major firm is cutting headcount and citing AI.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT AI tracking' },
+    { id:'climate',  label:'Climate & Disasters', score:71, weight:10, detail:'Record heatwaves, Great Barrier Reef bleaching at unprecedented levels, and bushfire seasons getting longer. Climate policy remains stuck between ambition and reality.', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM, Open-Meteo' },
+    { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'China relations thawing but AUKUS costs blowing out ($368B). Defence spending rising to 3% GDP. Pacific influence being contested by China. Trade diversification slow.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT, DFAT' },
+    { id:'markets',  label:'Markets & Banks',  score:48, weight:5, detail:'ASX holding up but 4 of 6 biggest companies are banks \u2014 the economy is built around servicing property debt, not productive enterprise. AUD under pressure.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD' },
   ],
   signals: [
     { text:'$2.5 trillion in mortgage debt \u2014 average $600K per household. Highest debt-to-income ratio in the Western world.', source:'rba', category:'housing', url:'https://www.rba.gov.au/statistics/tables/' },
@@ -1253,6 +1267,7 @@ function timeAgo(dateStr) {
 
 function renderNewsFactors(factors) {
   const container = document.getElementById('news-factors');
+  if (!container) return; // section removed, skip
   container.innerHTML = '';
 
   factors.forEach((factor, idx) => {
@@ -1353,20 +1368,15 @@ const SEVERITY_WEIGHTS = {
 
 function updateAlbo(score) {
   const levels = [
-    { max: 20, video: '/images/albo_fine.mp4', caption: "She'll be right, mate", sub: "Albo is calm" },
-    { max: 40, video: '/images/albo_tense.mp4', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
-    { max: 60, video: '/images/albo_notgreat.mp4', caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
-    { max: 80, video: '/images/albo_fucked.mp4', caption: "We're properly fucked here", sub: "Albo is losing it" },
-    { max: 100, video: '/images/albo_cooked.mp4', caption: "Completely and utterly cooked", sub: "Albo has given up" },
+    { max: 20, gif: '/images/albo_cooked.gif', caption: "She'll be right, mate", sub: "Albo is calm" },
+    { max: 40, gif: '/images/albo_cooked.gif', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
+    { max: 60, gif: '/images/albo_cooked.gif', caption: "Yeah nah, gone to shit", sub: "Albo is stressed" },
+    { max: 80, gif: '/images/albo_cooked.gif', caption: "We're properly fucked here", sub: "Albo is losing it" },
+    { max: 100, gif: '/images/albo_cooked.gif', caption: "Completely and utterly cooked", sub: "Albo has given up" },
   ];
   const level = levels.find(l => score <= l.max) || levels[4];
-  const vid = document.getElementById('albo-video');
-
-  if (vid && level.video) {
-    vid.src = level.video;
-    vid.load();
-    vid.play().catch(() => {});
-  }
+  const img = document.getElementById('albo-gif');
+  if (img && level.gif) img.src = level.gif + '?t=' + Date.now();
 
   document.getElementById('albo-caption-text').textContent = level.caption;
   document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
