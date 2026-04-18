@@ -596,7 +596,7 @@
   .vote-ticker::after { right: 0; background: linear-gradient(270deg, rgba(17,17,17,0.97), transparent); }
   .vote-ticker-track {
     display: inline-flex; gap: 40px; padding: 0 20px;
-    animation: ticker-scroll var(--ticker-duration, 40s) linear infinite;
+    animation: ticker-scroll var(--ticker-duration, 15s) linear infinite;
   }
   .vote-ticker:hover .vote-ticker-track { animation-play-state: paused; }
   .vote-ticker-item {
@@ -1673,7 +1673,7 @@ async function loadTicker() {
     // Adjust speed based on content width
     const tickerEl = document.getElementById('vote-ticker');
     tickerEl.style.display = '';
-    const speed = Math.max(20, track.scrollWidth / 60); // ~60px/sec
+    const speed = Math.max(8, track.scrollWidth / 150); // ~150px/sec
     track.style.setProperty('--ticker-duration', speed + 's');
     // Reset animation
     track.style.animation = 'none';
