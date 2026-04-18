@@ -51,12 +51,17 @@ FACTORS = [
 ]
 
 RESPONSE_FORMAT = """
-Return your response as a JSON array. Each item must have these fields:
-- "headline": string (the article headline)
-- "summary": string (1-2 sentence summary)
-- "source": string (publication name e.g. "ABC News", "SMH", "AFR")
-- "url": string (the full URL to the article)
-- "relevance_score": number (1-10 how relevant this is to measuring how fucked Australia is)
+Return your response as a JSON object with these fields:
+- "severity_score": number (0-100, how bad is this factor RIGHT NOW for Australia? 0=totally fine, 50=concerning, 75=pretty fucked, 100=completely cooked. Be honest and data-driven.)
+- "severity_summary": string (one sentence explaining why you gave this score)
+- "articles": array of objects, each with:
+  - "headline": string (the article headline)
+  - "summary": string (1-2 sentence summary of the article)
+  - "source": string (publication name e.g. "ABC News", "SMH", "AFR")
+  - "url": string (the full URL to the article)
+  - "relevance_score": number (1-10 how relevant this article is)
+
+Base your severity_score on the ACTUAL data and news you find, not assumptions. If things are genuinely fine, score low. If things are genuinely bad, score high.
 
 Return ONLY valid JSON, no markdown, no code fences, no explanation.
 """
@@ -105,21 +110,47 @@ async def fetch_factor(factor: dict) -> dict:
                 if block.get("type") == "text":
                     text += block.get("text", "")
 
-            # Parse JSON from response — handle markdown fences and mixed content
+            # Parse JSON from response — handle both object and array formats
             text = text.strip()
-            # Find JSON array in the response
-            start = text.find("[")
-            end = text.rfind("]")
-            if start != -1 and end != -1:
-                text = text[start:end + 1]
-            articles = json.loads(text)
+            # Try to find JSON object first (new format), then array (old format)
+            obj_start = text.find("{")
+            arr_start = text.find("[")
 
-            log.info("Scrapboard [%s]: found %d articles", factor["id"], len(articles))
-            return {
+            parsed = None
+            if obj_start != -1 and (arr_start == -1 or obj_start < arr_start):
+                end = text.rfind("}")
+                if end != -1:
+                    parsed = json.loads(text[obj_start:end + 1])
+            elif arr_start != -1:
+                end = text.rfind("]")
+                if end != -1:
+                    parsed = json.loads(text[arr_start:end + 1])
+
+            # Handle both formats
+            if isinstance(parsed, dict):
+                articles = parsed.get("articles", [])
+                severity = parsed.get("severity_score")
+                severity_summary = parsed.get("severity_summary", "")
+            elif isinstance(parsed, list):
+                articles = parsed
+                severity = None
+                severity_summary = ""
+            else:
+                articles = []
+                severity = None
+                severity_summary = ""
+
+            log.info("Scrapboard [%s]: %d articles, severity=%s", factor["id"], len(articles), severity)
+            result = {
                 "id": factor["id"],
                 "label": factor["label"],
                 "articles": articles,
             }
+            if severity is not None:
+                result["severity_score"] = severity
+            if severity_summary:
+                result["severity_summary"] = severity_summary
+            return result
     except Exception as e:
         log.error("Scrapboard [%s] failed: %s", factor["id"], e)
         return {

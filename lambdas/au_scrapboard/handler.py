@@ -82,14 +82,19 @@ def cache_handler(event, context):
                     item["relevance_score"] = Decimal(str(item["relevance_score"]))
                 clean_articles.append(item)
 
-            table.put_item(Item={
+            item = {
                 "factor_id": factor["id"],
                 "label": factor["label"],
                 "articles": clean_articles,
                 "updated_at": ts,
                 "error": factor.get("error", ""),
-            })
-            log.info("Cached %s: %d articles", factor["id"], len(articles))
+            }
+            if factor.get("severity_score") is not None:
+                item["severity_score"] = Decimal(str(factor["severity_score"]))
+            if factor.get("severity_summary"):
+                item["severity_summary"] = factor["severity_summary"]
+            table.put_item(Item=item)
+            log.info("Cached %s: %d articles, severity=%s", factor["id"], len(articles), factor.get("severity_score"))
 
         log.info("Scrapboard cache refresh complete — %d factors", len(results))
         return {"statusCode": 200, "body": json.dumps({"cached": len(results), "ts": ts})}
@@ -117,12 +122,17 @@ def read_handler(event, context):
                 if "relevance_score" in ca:
                     ca["relevance_score"] = float(ca["relevance_score"])
                 clean.append(ca)
-            results.append({
+            entry = {
                 "id": item["factor_id"],
                 "label": item.get("label", ""),
                 "articles": clean,
                 "updated_at": item.get("updated_at", ""),
-            })
+            }
+            if "severity_score" in item:
+                entry["severity_score"] = float(item["severity_score"])
+            if "severity_summary" in item:
+                entry["severity_summary"] = item["severity_summary"]
+            results.append(entry)
 
         # Sort by factor order
         order = {f["id"]: i for i, f in enumerate(FACTORS)}

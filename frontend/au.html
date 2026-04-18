@@ -480,6 +480,23 @@
     text-align: center; padding: 32px 16px; color: var(--muted); font-size: 12px;
   }
 
+  .live-analysis-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 600;
+    margin-top: 8px; border: 1px solid rgba(0,204,102,0.3); background: rgba(0,204,102,0.06);
+    color: #00cc66; text-transform: uppercase; letter-spacing: 0.08em;
+    animation: fadeInBadge 0.6s ease-out;
+  }
+  .live-analysis-badge .pulse-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #00cc66;
+    animation: blink 1.4s ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(0,204,102,0.5);
+  }
+  @keyframes fadeInBadge {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   /* Sidebar news article */
   .sidebar-news-article {
     display: block; padding: 10px 0; border-bottom: 1px solid var(--border);
@@ -641,6 +658,7 @@
           <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px">out of 100</div>
           <span class="score-emoji" id="score-emoji"></span>
           <div id="score-delta" class="score-delta mono" style="display:none"></div>
+          <div id="live-analysis-indicator" style="display:none"></div>
           <!-- Albo's mood -->
           <div id="leader-face" style="margin-top:16px;text-align:center">
             <div style="font-size:64px;line-height:1" id="leader-emoji">😐</div>
@@ -1011,9 +1029,10 @@ const METHODOLOGY = [
   { name: 'Housing Crisis', weight: 25, color: '#ff8c00', source: 'ABS, SQM Research, realestate.com.au' },
   { name: 'Cost of Living', weight: 20, color: '#e6c619', source: 'ABS CPI, RBA cash rate, utilities data' },
   { name: 'Jobs & Wages', weight: 15, color: '#7ab800', source: 'ABS labour force, wage price index' },
-  { name: 'Climate', weight: 15, color: '#00b386', source: 'BOM temperature & event data' },
-  { name: 'Geopolitical', weight: 15, color: '#ff3333', source: 'GDELT events, DFAT, defence data' },
-  { name: 'Markets', weight: 10, color: '#888', source: 'ASX 200, AUD/USD, iron ore via yfinance' },
+  { name: 'AI Taking Jobs', weight: 15, color: '#a855f7', source: 'AI disruption tracking, news analysis' },
+  { name: 'Climate', weight: 10, color: '#00b386', source: 'BOM temperature & event data' },
+  { name: 'Geopolitical', weight: 10, color: '#ff3333', source: 'GDELT events, DFAT, defence data' },
+  { name: 'Markets', weight: 5, color: '#888', source: 'ASX 200, AUD/USD, iron ore via yfinance' },
 ];
 METHODOLOGY.forEach(m => {
   const row = document.createElement('div');
@@ -1322,6 +1341,107 @@ function renderSidebarNews(factors) {
   });
 }
 
+// -- Map API factor IDs to DATA.categories IDs --
+const API_TO_CATEGORY_ID = {
+  housing: 'housing',
+  cost_of_living: 'living',
+  jobs: 'jobs',
+  ai_jobs: 'jobs',       // ai_jobs maps to the jobs category card
+  climate: 'climate',
+  geopolitical: 'geo',
+  markets: 'markets',
+};
+
+// Weights for computing the overall score from API severity scores
+const SEVERITY_WEIGHTS = {
+  housing: 0.25,
+  cost_of_living: 0.20,
+  jobs: 0.15,
+  ai_jobs: 0.15,
+  climate: 0.10,
+  geopolitical: 0.10,
+  markets: 0.05,
+};
+
+function updateScoresFromAPI(factors) {
+  const severityMap = {};
+  factors.forEach(f => {
+    if (f.severity_score != null) {
+      severityMap[f.id] = f;
+    }
+  });
+
+  // Update each dimension card
+  const categoryScoreUpdates = {};
+  factors.forEach(f => {
+    const catId = API_TO_CATEGORY_ID[f.id];
+    if (!catId || f.severity_score == null) return;
+
+    // For ai_jobs and jobs both mapping to 'jobs', take the higher score
+    if (categoryScoreUpdates[catId] != null && categoryScoreUpdates[catId] >= f.severity_score) return;
+    categoryScoreUpdates[catId] = f.severity_score;
+
+    // Update DATA.categories entry
+    const cat = DATA.categories.find(c => c.id === catId);
+    if (cat) {
+      cat.score = f.severity_score;
+      if (f.severity_summary) cat.detail = f.severity_summary;
+    }
+  });
+
+  // Re-render each sub-card gauge and detail text
+  Object.keys(categoryScoreUpdates).forEach(catId => {
+    const newScore = categoryScoreUpdates[catId];
+    const cat = DATA.categories.find(c => c.id === catId);
+    if (!cat) return;
+
+    // Update the gauge animation
+    const numEl = document.getElementById(`n-sc-${catId}`);
+    const progEl = document.getElementById(`p-sc-${catId}`);
+    if (numEl && progEl) {
+      animateVal(newScore, newScore, 55, 55, 37, numEl, progEl, null, 200);
+    }
+
+    // Update the detail text on the card
+    const cards = document.querySelectorAll('.sub-card');
+    cards.forEach(card => {
+      const labelEl = card.querySelector('.sub-card-label');
+      if (labelEl && labelEl.textContent.trim() === cat.label) {
+        const detailEl = card.querySelector('.sub-card-detail');
+        if (detailEl && cat.detail) {
+          detailEl.textContent = cat.detail;
+        }
+      }
+    });
+  });
+
+  // Compute weighted overall score
+  let weightedSum = 0;
+  let totalWeight = 0;
+  Object.keys(SEVERITY_WEIGHTS).forEach(factorId => {
+    const factor = severityMap[factorId];
+    if (factor && factor.severity_score != null) {
+      weightedSum += factor.severity_score * SEVERITY_WEIGHTS[factorId];
+      totalWeight += SEVERITY_WEIGHTS[factorId];
+    }
+  });
+
+  if (totalWeight > 0) {
+    const newOverall = Math.round(weightedSum / totalWeight);
+    DATA.overall = newOverall;
+
+    // Re-animate the main gauge
+    animateVal(newOverall, newOverall, 150, 150, 114, mNum, mProg, mVerdict, 200);
+
+    // Show "Powered by live news analysis" indicator
+    const indicator = document.getElementById('live-analysis-indicator');
+    if (indicator) {
+      indicator.style.display = '';
+      indicator.innerHTML = '<span class="live-analysis-badge mono"><span class="pulse-dot"></span> Powered by live news analysis</span>';
+    }
+  }
+}
+
 (async () => {
   try {
     const res = await fetch(`${BACKEND_URL}/api/au/news`);
@@ -1340,6 +1460,9 @@ function renderSidebarNews(factors) {
     renderNewsFactors(factors);
     renderSidebarNews(factors);
 
+    // Update scores from API severity data
+    updateScoresFromAPI(factors);
+
     // Re-observe for fade-in
     const newsSection = document.getElementById('news-section');
     if (newsSection) observer.observe(newsSection);
@@ -1348,6 +1471,7 @@ function renderSidebarNews(factors) {
     document.getElementById('news-factors').innerHTML =
       '<div class="news-loading mono" style="color:var(--dim)">News unavailable — check back later</div>';
     document.getElementById('news-refreshed').innerHTML = '';
+    // Fallback: hardcoded scores remain as-is
   }
 })();
 </script>
