@@ -404,7 +404,11 @@
     50% { filter: drop-shadow(0 0 35px rgba(255, 30, 30, 0.9)); }
   }
 
-  #main-svg { display: block; transition: filter 0.5s ease; }
+  #main-svg { display: block; transition: filter 0.5s ease; animation: gauge-pulse 2.5s ease-in-out infinite; }
+  @keyframes gauge-pulse {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(255,51,51,0.2)); }
+    50% { filter: drop-shadow(0 0 18px rgba(255,51,51,0.5)); }
+  }
 
   .score-delta {
     display: inline-flex; align-items: center; gap: 4px;

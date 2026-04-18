@@ -44,8 +44,8 @@ def _submit_vote(event):
     try:
         body = json.loads(event.get("body", "{}"))
         score = body.get("score")
-        if not score or not isinstance(score, int) or score < 1 or score > 10:
-            return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": "score must be 1-10"})}
+        if not score or not isinstance(score, int) or score not in (1,2,3,4,5,6,7,8,9,10,20,40,60,80,100):
+            return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": "invalid score"})}
 
         # Hash IP for dedup
         ip = event.get("requestContext", {}).get("http", {}).get("sourceIp", "unknown")
@@ -80,22 +80,19 @@ def _get_results():
                 break
             kwargs["ExclusiveStartKey"] = last
 
-        distribution = {str(i): 0 for i in range(1, 11)}
+        # Count all votes — supports both old 1-10 and new 20/40/60/80/100 scale
+        distribution = {}
         total = 0
-        weighted_sum = 0
         for item in items:
             s = int(item.get("score", 0))
-            if 1 <= s <= 10:
-                distribution[str(s)] += 1
+            if s > 0:
+                distribution[str(s)] = distribution.get(str(s), 0) + 1
                 total += 1
-                weighted_sum += s
-
-        average = round(weighted_sum / total, 2) if total > 0 else 0.0
 
         return {
             "statusCode": 200,
             "headers": CORS_HEADERS,
-            "body": json.dumps({"total_votes": total, "average": average, "distribution": distribution}),
+            "body": json.dumps({"total_votes": total, "distribution": distribution}),
         }
     except Exception as e:
         log.error("Poll results failed: %s", e, exc_info=True)
