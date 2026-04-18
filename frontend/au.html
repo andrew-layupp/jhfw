@@ -147,9 +147,15 @@
 
   .page-header { margin-bottom: 28px; }
 
-  .layout { display: flex; gap: 28px; align-items: stretch; }
+  .layout { display: flex; gap: 28px; align-items: flex-start; }
   .main-col { flex: 1; min-width: 0; }
-  .sidebar-col { width: 340px; flex-shrink: 0; }
+  .sidebar-col {
+    width: 340px; flex-shrink: 0;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    margin-right: -20px;
+    padding-right: 20px;
+  }
   .sidebar-inner { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; scrollbar-gutter: stable; }
   .sidebar-inner::-webkit-scrollbar { width: 4px; }
   .sidebar-inner::-webkit-scrollbar-track { background: transparent; }
@@ -841,13 +847,13 @@ const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
 const DATA = {
   overall: 70,
   categories: [
-    { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'Scored high because $2.5T in mortgage debt, record-low vacancy (0.8%), and Sydney median at $1.6M make Australia the most housing-exposed economy in the developed world.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'SQM Research',url:'https://sqmresearch.com.au/'}], sourceShort:'ABS, SQM Research, RBA' },
-    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'CPI at 3.6% with RBA holding at 4.10%. Electricity, insurance and groceries are all surging. Wages aren\u2019t keeping up and the average household is going backwards in real terms.', sources:[{label:'RBA',url:'https://www.rba.gov.au/'},{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
-    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:15, detail:'Unemployment steady at 4.3% but the real risk is structural: 80% services economy with 39% knowledge workers directly exposed to AI displacement. Tech layoffs already accelerating.', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, GDELT' },
-    { id:'ai',       label:'AI Disruption',   score:75, weight:15, detail:'AI is already replacing junior roles in architecture, accounting, and legal. Australia\u2019s services-heavy economy is uniquely exposed. Every major firm is cutting headcount and citing AI.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT AI tracking' },
-    { id:'climate',  label:'Climate & Disasters', score:71, weight:10, detail:'Record heatwaves, Great Barrier Reef bleaching at unprecedented levels, and bushfire seasons getting longer. Climate policy remains stuck between ambition and reality.', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM, Open-Meteo' },
-    { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'China relations thawing but AUKUS costs blowing out ($368B). Defence spending rising to 3% GDP. Pacific influence being contested by China. Trade diversification slow.', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT, DFAT' },
-    { id:'markets',  label:'Markets & Banks',  score:48, weight:5, detail:'ASX holding up but 4 of 6 biggest companies are banks \u2014 the economy is built around servicing property debt, not productive enterprise. AUD under pressure.', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD' },
+    { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'<ul><li>$2.5T mortgage debt \u2014 highest debt-to-income ratio in the Western world</li><li>Sydney median house price at $1.6M, rental vacancy 0.8% (record low)</li><li>Entire economy built around servicing property with borrowed money</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS, SQM Research, RBA' },
+    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'<ul><li>CPI at 3.6% with RBA holding at 4.10% \u2014 households going backwards</li><li>Electricity up 20%, insurance and groceries surging</li><li>Wages not keeping up with inflation in any major sector</li></ul>', sources:[{label:'RBA',url:'https://www.rba.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
+    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:15, detail:'<ul><li>80% services economy \u2014 39% of workers do jobs AI can replace</li><li>Unemployment at 4.3% but structural risk is massive</li><li>Tech layoffs accelerating across all major firms</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS labour force, GDELT' },
+    { id:'ai',       label:'AI Disruption',   score:75, weight:15, detail:'<ul><li>AI replacing junior roles in architecture, accounting, and legal right now</li><li>One tool reduced tendering costs by 90% \u2014 juniors gone</li><li>Every major firm cutting headcount and citing AI as the reason</li></ul>', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT AI tracking' },
+    { id:'climate',  label:'Climate & Disasters', score:71, weight:10, detail:'<ul><li>Great Barrier Reef suffering worst mass bleaching on record</li><li>Heatwaves smashing records, bushfire seasons getting longer</li><li>Energy policy stuck between net zero ambition and supply reality</li></ul>', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM, Open-Meteo' },
+    { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'<ul><li>AUKUS submarine program cost revised to $368B and climbing</li><li>China relations thawing but Pacific influence actively contested</li><li>Defence spending rising to 3% of GDP by 2033</li></ul>', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT, DFAT' },
+    { id:'markets',  label:'Markets & Banks',  score:48, weight:5, detail:'<ul><li>4 of 6 biggest ASX companies are banks, not builders or exporters</li><li>CBA holds $588B in home loans \u2014 business loans less than a third</li><li>AUD under pressure, iron ore demand softening on China slowdown</li></ul>', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD' },
   ],
   signals: [
     { text:'$2.5 trillion in mortgage debt \u2014 average $600K per household. Highest debt-to-income ratio in the Western world.', source:'rba', category:'housing', url:'https://www.rba.gov.au/statistics/tables/' },
@@ -1398,12 +1404,18 @@ function updateScoresFromAPI(factors) {
       animateVal(newScore, newScore, 55, 55, 37, numEl, progEl, null, 200);
     }
 
-    // Update the detail text as bullet points
+    // Update the detail text as bullet points from API severity summary
     const detailEl = document.getElementById(`detail-${catId}`);
     if (detailEl && cat.detail) {
-      // Split summary into sentences and show as 3 bullet points
-      const sentences = cat.detail.replace(/\.\s+/g, '.|').split('|').filter(s => s.trim().length > 5).slice(0, 3);
-      detailEl.innerHTML = `<ul>${sentences.map(s => `<li>${s.trim()}</li>`).join('')}</ul>`;
+      // If the API gave us a severity_summary, split into sentences for bullets
+      const text = cat.detail;
+      // Check if it already has <ul> (fallback HTML) — if so, keep it
+      if (!text.includes('<ul>')) {
+        const sentences = text.replace(/\.\s+/g, '.|').split('|').filter(s => s.trim().length > 5).slice(0, 3);
+        if (sentences.length >= 2) {
+          detailEl.innerHTML = `<ul>${sentences.map(s => `<li>${s.trim()}</li>`).join('')}</ul>`;
+        }
+      }
     }
 
     // Add a relevant news article link
