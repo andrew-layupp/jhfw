@@ -314,6 +314,7 @@ const BACKEND_URL = 'https://g7rq7p0rzi.execute-api.ap-southeast-2.amazonaws.com
 const LOCAL_URL = 'http://localhost:8000';
 
 const FACTOR_ICONS = {
+  reddit_australia: '👽',
   housing: '🏠',
   cost_of_living: '💸',
   jobs: '👷',
@@ -324,6 +325,7 @@ const FACTOR_ICONS = {
 };
 
 const FACTOR_COLORS = {
+  reddit_australia: '#ff4500',
   housing: '#ff3333',
   cost_of_living: '#ff8c00',
   jobs: '#e6c619',
@@ -400,8 +402,9 @@ function renderFactors(data) {
   });
 }
 
-const FACTOR_IDS = ['housing', 'cost_of_living', 'jobs', 'ai_jobs', 'climate', 'geopolitical', 'markets'];
+const FACTOR_IDS = ['reddit_australia', 'housing', 'cost_of_living', 'jobs', 'ai_jobs', 'climate', 'geopolitical', 'markets'];
 const FACTOR_LABELS = {
+  reddit_australia: 'r/Australia Trending',
   housing: 'Housing Crisis', cost_of_living: 'Cost of Living', jobs: 'Jobs & Wages',
   ai_jobs: 'AI Taking Jobs', climate: 'Climate & Disasters', geopolitical: 'Geopolitical', markets: 'Markets & Banks'
 };
@@ -440,15 +443,19 @@ function renderFactorResult(factor) {
   if (!body) return;
 
   const articles = factor.articles || [];
-  const hasError = factor.error && articles.length === 0;
-  count.textContent = hasError ? 'error' : `${articles.length} articles`;
+  const hasArticles = articles.length > 0;
+  const fatalError = factor.error && !hasArticles;
+  count.textContent = fatalError ? 'error' : `${articles.length} articles`;
 
-  if (hasError) {
+  if (fatalError) {
     body.innerHTML = `<div class="factor-error mono">Failed to load: ${factor.error}</div>`;
     return;
   }
 
   let html = '';
+  if (factor.error && hasArticles) {
+    html += `<div class="factor-error mono" style="text-align:left;padding:10px 20px;border-bottom:1px solid var(--border)">Note: ${factor.error}</div>`;
+  }
   articles.forEach(a => {
     const headline = a.url
       ? `<a href="${a.url}" target="_blank" rel="noopener">${a.headline || a.title || 'Untitled'}</a>`

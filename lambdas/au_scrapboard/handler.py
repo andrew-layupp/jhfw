@@ -117,12 +117,16 @@ def read_handler(event, context):
                 if "relevance_score" in ca:
                     ca["relevance_score"] = float(ca["relevance_score"])
                 clean.append(ca)
-            results.append({
+            entry = {
                 "id": item["factor_id"],
                 "label": item.get("label", ""),
                 "articles": clean,
                 "updated_at": item.get("updated_at", ""),
-            })
+            }
+            err = item.get("error", "")
+            if err:
+                entry["error"] = err
+            results.append(entry)
 
         # Sort by factor order
         order = {f["id"]: i for i, f in enumerate(FACTORS)}
