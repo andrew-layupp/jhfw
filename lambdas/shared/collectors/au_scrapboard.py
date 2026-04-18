@@ -21,7 +21,7 @@ FACTORS = [
     {
         "id": "cost_of_living",
         "label": "Cost of Living",
-        "search_prompt": "Find the 5 most recent news articles (from the last 7 days) about Australian cost of living, inflation, grocery prices, electricity costs, insurance premiums, or RBA interest rate decisions. For each article, provide the headline, a 1-2 sentence summary, the source name, and the URL.",
+        "search_prompt": "Find the 5 most recent news articles (from the last 7 days) about Australian cost of living, petrol prices, fuel prices, inflation, grocery prices, electricity costs, insurance premiums, or RBA interest rate decisions. For each article, provide the headline, a 1-2 sentence summary, the source name, and the URL.",
     },
     {
         "id": "jobs",

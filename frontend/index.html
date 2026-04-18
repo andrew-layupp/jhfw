@@ -771,7 +771,7 @@
 
       <!-- Sub-indices -->
       <div class="fade-in-section">
-        <div class="section-label mono">Dimension</div>
+        <div class="section-label mono">What's making Australia fucked</div>
         <div class="sub-grid" id="sub-grid"></div>
       </div>
 
@@ -859,7 +859,7 @@ const DATA = {
   overall: 70,
   categories: [
     { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'<ul><li>$2.5T mortgage debt \u2014 highest debt-to-income ratio in the Western world</li><li>Sydney median house price at $1.6M, rental vacancy 0.8% (record low)</li><li>Entire economy built around servicing property with borrowed money</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS, SQM Research, RBA' },
-    { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'<ul><li>CPI at 3.6% with RBA holding at 4.10% \u2014 households going backwards</li><li>Electricity up 20%, insurance and groceries surging</li><li>Wages not keeping up with inflation in any major sector</li></ul>', sources:[{label:'RBA',url:'https://www.rba.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
+    { id:'living',   label:'Cost of Living',  score:75, weight:20, detail:'<ul><li>Petrol back above $2/litre in most capitals \u2014 commuters copping it</li><li>CPI at 3.6%, RBA holding at 4.10%, electricity up 20%</li><li>Groceries, insurance and rent all surging while wages lag behind</li></ul>', sources:[{label:'RBA',url:'https://www.rba.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate, petrol data' },
     { id:'jobs',     label:'Jobs & AI',  score:70, weight:25, detail:'<ul><li>80% services economy with 39% of workers in jobs AI can replace</li><li>AI already replacing juniors in architecture, accounting and legal</li><li>Unemployment at 4.3% but structural displacement risk is massive</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, GDELT AI tracking' },
     { id:'climate',  label:'Climate & Disasters', score:71, weight:10, detail:'<ul><li>Great Barrier Reef suffering worst mass bleaching on record</li><li>Heatwaves smashing records, bushfire seasons getting longer</li><li>Energy policy stuck between net zero ambition and supply reality</li></ul>', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM, Open-Meteo' },
     { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'<ul><li>AUKUS submarine program cost revised to $368B and climbing</li><li>China relations thawing but Pacific influence actively contested</li><li>Defence spending rising to 3% of GDP by 2033</li></ul>', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT, DFAT' },
@@ -1077,8 +1077,10 @@ DATA.categories.forEach((cat, i) => {
       </div>
     </div>`;
   grid.appendChild(card);
-  // If user previously voted on this dimension, use their score
-  const savedDimScore = existingVote ? parseInt(existingVote, 10) : cat.score;
+  // If user previously voted, blend their vote with seed (1 among ~200)
+  const savedDimScore = existingVote
+    ? Math.round((cat.score * 200 + parseInt(existingVote, 10)) / 201)
+    : cat.score;
   animateVal(savedDimScore, savedDimScore, 55, 55, 37,
     document.getElementById(`n-sc-${cat.id}`),
     document.getElementById(`p-sc-${cat.id}`),
@@ -1090,13 +1092,17 @@ document.getElementById('sub-grid').addEventListener('click', function(e) {
   const btn = e.target.closest('.dim-vote-btn');
   if (!btn) return;
   const dimId = btn.dataset.dim;
-  const score = parseInt(btn.dataset.score, 10);
-  localStorage.setItem('jhfw_dim_' + dimId, score);
-  // Re-animate gauge with user's vote
+  const userScore = parseInt(btn.dataset.score, 10);
+  localStorage.setItem('jhfw_dim_' + dimId, userScore);
+  // Blend user vote with seed score (as if 1 vote among ~200 existing)
+  const cat = DATA.categories.find(c => c.id === dimId);
+  const seedScore = cat ? cat.score : 50;
+  const SEED_VOTES = 200;
+  const blended = Math.round((seedScore * SEED_VOTES + userScore) / (SEED_VOTES + 1));
   const numEl = document.getElementById('n-sc-' + dimId);
   const progEl = document.getElementById('p-sc-' + dimId);
   if (numEl && progEl) {
-    animateVal(score, score, 55, 55, 37, numEl, progEl, null, 0);
+    animateVal(blended, blended, 55, 55, 37, numEl, progEl, null, 0);
   }
   // Replace buttons with "Voted!" text
   const voteContainer = document.getElementById('dim-vote-' + dimId);
