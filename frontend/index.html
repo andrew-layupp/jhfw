@@ -1257,11 +1257,15 @@ function showPollResults(data) {
 
   resultsArea.innerHTML = `
     <div class="poll-results">
-      <div class="poll-results-avg mono" style="color:${avgColor}">${Math.round(pd.avg100)} / 100</div>
-      <div class="poll-results-avg-label mono">The people reckon we're ${pd.avg100 >= 80 ? 'absolutely' : pd.avg100 >= 60 ? 'royally' : pd.avg100 >= 40 ? 'properly' : pd.avg100 >= 20 ? 'slightly' : 'not'} fucked</div>
       <div class="poll-results-bars">${barsHtml}</div>
-      <div class="poll-results-total mono">${pd.total.toLocaleString()} total votes</div>
     </div>`;
+
+  // Bring back vote buttons after 5 seconds
+  setTimeout(() => {
+    document.getElementById('poll-vote-area').style.display = '';
+    resultsArea.style.display = 'none';
+    pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
+  }, 5000);
 
   document.getElementById('poll-count').textContent = pd.total.toLocaleString();
 
@@ -1332,9 +1336,18 @@ function updateMainScoreFromPoll(pd, animate) {
   const newScore = Math.floor(exactScore);
   const decimals = ((exactScore - newScore) * 100).toFixed(0).padStart(2, '0');
 
-  // Update decimal display
+  // Always jumble decimals on every poll to look alive
   const decEl = document.getElementById('main-decimal');
-  if (decEl) decEl.textContent = '.' + decimals;
+  if (decEl && animate) {
+    let rolls = 0;
+    const rollInterval = setInterval(() => {
+      decEl.textContent = '.' + String(Math.floor(Math.random() * 100)).padStart(2, '0');
+      rolls++;
+      if (rolls > 8) { clearInterval(rollInterval); decEl.textContent = '.' + decimals; }
+    }, 80);
+  } else if (decEl) {
+    decEl.textContent = '.' + decimals;
+  }
 
   // Smooth tick the vote count
   const countEl = document.getElementById('poll-count');
@@ -1342,15 +1355,6 @@ function updateMainScoreFromPoll(pd, animate) {
     smoothTickCount(countEl, lastPollTotal, pd.total, 800);
     countEl.classList.add('score-tick-up');
     setTimeout(() => countEl.classList.remove('score-tick-up'), 600);
-    // Roll the decimals randomly for 1 second to look alive
-    if (decEl) {
-      let rolls = 0;
-      const rollInterval = setInterval(() => {
-        decEl.textContent = '.' + String(Math.floor(Math.random() * 100)).padStart(2, '0');
-        rolls++;
-        if (rolls > 10) { clearInterval(rollInterval); decEl.textContent = '.' + decimals; }
-      }, 100);
-    }
   } else {
     countEl.textContent = pd.total.toLocaleString();
   }
