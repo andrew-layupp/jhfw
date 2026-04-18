@@ -131,6 +131,10 @@ Resources:
       Description: EventBridge-triggered every 15 min — collects data, scores, stores in DynamoDB
       Timeout: 900
       MemorySize: 1024
+      Environment:
+        Variables:
+          FRED_API_KEY: '{{resolve:ssm-secure:/jhfw/fred-api-key}}'
+          NEWSAPI_KEY: '{{resolve:ssm-secure:/jhfw/newsapi-key}}'
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref SnapshotsTable
@@ -191,6 +195,10 @@ Resources:
       Description: Scheduled every 6h — runs Claude web search and caches results in DynamoDB
       Timeout: 900
       MemorySize: 1024
+      Environment:
+        Variables:
+          CLAUDE_API_KEY: '{{resolve:ssm-secure:/jhfw/claude-api-key}}'
+          SCRAPBOARD_TABLE: !Ref ScrapboardTable
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ScrapboardTable
