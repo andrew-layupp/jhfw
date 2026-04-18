@@ -848,8 +848,7 @@ const DATA = {
   categories: [
     { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'<ul><li>$2.5T mortgage debt \u2014 highest debt-to-income ratio in the Western world</li><li>Sydney median house price at $1.6M, rental vacancy 0.8% (record low)</li><li>Entire economy built around servicing property with borrowed money</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS, SQM Research, RBA' },
     { id:'living',   label:'Cost of Living',  score:72, weight:20, detail:'<ul><li>CPI at 3.6% with RBA holding at 4.10% \u2014 households going backwards</li><li>Electricity up 20%, insurance and groceries surging</li><li>Wages not keeping up with inflation in any major sector</li></ul>', sources:[{label:'RBA',url:'https://www.rba.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate' },
-    { id:'jobs',     label:'Jobs & AI Risk',  score:65, weight:15, detail:'<ul><li>80% services economy \u2014 39% of workers do jobs AI can replace</li><li>Unemployment at 4.3% but structural risk is massive</li><li>Tech layoffs accelerating across all major firms</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS labour force, GDELT' },
-    { id:'ai',       label:'AI Disruption',   score:75, weight:15, detail:'<ul><li>AI replacing junior roles in architecture, accounting, and legal right now</li><li>One tool reduced tendering costs by 90% \u2014 juniors gone</li><li>Every major firm cutting headcount and citing AI as the reason</li></ul>', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT AI tracking' },
+    { id:'jobs',     label:'Jobs & AI',  score:70, weight:25, detail:'<ul><li>80% services economy with 39% of workers in jobs AI can replace</li><li>AI already replacing juniors in architecture, accounting and legal</li><li>Unemployment at 4.3% but structural displacement risk is massive</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'},{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'ABS labour force, GDELT AI tracking' },
     { id:'climate',  label:'Climate & Disasters', score:71, weight:10, detail:'<ul><li>Great Barrier Reef suffering worst mass bleaching on record</li><li>Heatwaves smashing records, bushfire seasons getting longer</li><li>Energy policy stuck between net zero ambition and supply reality</li></ul>', sources:[{label:'BOM',url:'http://www.bom.gov.au/'}], sourceShort:'BOM, Open-Meteo' },
     { id:'geo',      label:'Geopolitical',    score:55, weight:10, detail:'<ul><li>AUKUS submarine program cost revised to $368B and climbing</li><li>China relations thawing but Pacific influence actively contested</li><li>Defence spending rising to 3% of GDP by 2033</li></ul>', sources:[{label:'GDELT',url:'https://www.gdeltproject.org/'}], sourceShort:'GDELT, DFAT' },
     { id:'markets',  label:'Markets & Banks',  score:48, weight:5, detail:'<ul><li>4 of 6 biggest ASX companies are banks, not builders or exporters</li><li>CBA holds $588B in home loans \u2014 business loans less than a third</li><li>AUD under pressure, iron ore demand softening on China slowdown</li></ul>', sources:[{label:'Yahoo Finance',url:'https://finance.yahoo.com/'}], sourceShort:'ASX 200, AUD/USD' },
@@ -1342,10 +1341,10 @@ const SEVERITY_WEIGHTS = {
   housing: 0.25,
   cost_of_living: 0.20,
   jobs: 0.15,
-  ai_jobs: 0.15,
+  ai_jobs: 0.10,
   climate: 0.10,
   geopolitical: 0.10,
-  markets: 0.05,
+  markets: 0.10,
 };
 
 function updateAlbo(score) {
