@@ -1,7 +1,10 @@
 import aiosqlite
 import json
+import logging
 from datetime import datetime, timedelta
 from typing import Optional
+
+log = logging.getLogger(__name__)
 
 DB_PATH = "chaos.db"
 
@@ -38,7 +41,9 @@ CREATE TABLE IF NOT EXISTS poll_votes (
     ts        TEXT NOT NULL,
     score     INTEGER NOT NULL,
     ip_hash   TEXT,
-    country   TEXT NOT NULL DEFAULT 'au'
+    country   TEXT NOT NULL DEFAULT 'au',
+    factors   TEXT,
+    reason    TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_ts ON snapshots(ts);
@@ -148,15 +153,34 @@ async def count_snapshots() -> int:
     return row[0] if row else 0
 
 
-async def insert_poll_vote(score: int, ip_hash: str = None, country: str = "au"):
-    """Insert a user poll vote (score 1-10)."""
+async def insert_poll_vote(score: int, ip_hash: str = None, country: str = "au",
+                           factors: list = None, reason: str = None):
+    """Insert a user poll vote with optional factor selections and reason."""
     ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT INTO poll_votes (ts, score, ip_hash, country) VALUES (?, ?, ?, ?)",
-            (ts, score, ip_hash, country),
+            "INSERT INTO poll_votes (ts, score, ip_hash, country, factors, reason) VALUES (?, ?, ?, ?, ?, ?)",
+            (ts, score, ip_hash, country,
+             json.dumps(factors) if factors else None,
+             reason[:140] if reason else None),
         )
         await db.commit()
+
+
+async def get_recent_votes(country: str = "au", limit: int = 20) -> list:
+    """Return recent votes that include factor selections, for the ticker."""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            """SELECT ts, score, factors, reason, country FROM poll_votes
+               WHERE country = ? AND factors IS NOT NULL
+               ORDER BY ts DESC LIMIT ?""",
+            (country, limit),
+        ) as cur:
+            rows = await cur.fetchall()
+    return [{"ts": r["ts"], "score": r["score"],
+             "factors": json.loads(r["factors"]) if r["factors"] else [],
+             "reason": r["reason"], "country": r["country"]} for r in rows]
 
 
 async def get_poll_results(country: str = "au") -> dict:

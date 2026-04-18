@@ -65,6 +65,12 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /api/poll
             Method: POST
+        GetPollRecent:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/poll/recent
+            Method: GET
 
   ApiCurrentFunction:
     Type: AWS::Serverless::Function

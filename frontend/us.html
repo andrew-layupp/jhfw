@@ -527,6 +527,90 @@
   .poll-results-pct { font-size: 10px; color: var(--dim); width: 40px; flex-shrink: 0; }
   .poll-results-total { font-size: 12px; color: var(--muted); margin-top: 8px; }
 
+  /* Poll follow-up */
+  .poll-followup {
+    margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);
+    animation: followup-slide 0.4s ease-out;
+  }
+  @keyframes followup-slide {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .poll-followup-prompt {
+    font-size: 13px; color: var(--muted); margin-bottom: 14px;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .poll-factor-pills {
+    display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .poll-factor-pill {
+    padding: 8px 16px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--muted);
+    cursor: pointer; transition: all 0.2s; user-select: none;
+  }
+  .poll-factor-pill:hover { border-color: #555; color: var(--text); }
+  .poll-factor-pill.active {
+    border-color: var(--red); color: var(--text);
+    background: rgba(255,51,51,0.12); box-shadow: 0 0 12px rgba(255,51,51,0.15);
+  }
+  .poll-reason-wrap { margin-bottom: 14px; }
+  .poll-reason-input {
+    width: 100%; max-width: 400px; padding: 10px 14px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .poll-reason-input::placeholder { color: var(--dim); }
+  .poll-reason-input:focus { border-color: var(--red); }
+  .poll-followup-actions { display: flex; gap: 10px; justify-content: center; }
+  .poll-followup-btn {
+    padding: 10px 24px; border-radius: 8px; font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .poll-submit-btn {
+    background: var(--red); color: #fff; border: 1px solid var(--red);
+  }
+  .poll-submit-btn:hover { background: #e62e2e; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(255,51,51,0.3); }
+  .poll-skip-btn {
+    background: transparent; color: var(--dim); border: 1px solid var(--border);
+  }
+  .poll-skip-btn:hover { color: var(--muted); border-color: #555; }
+
+  /* Vote ticker */
+  .vote-ticker {
+    overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-bottom: 20px;
+    white-space: nowrap;
+    position: relative;
+  }
+  .vote-ticker::before, .vote-ticker::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 40px; z-index: 2; pointer-events: none;
+  }
+  .vote-ticker::before { left: 0; background: linear-gradient(90deg, var(--surface), transparent); }
+  .vote-ticker::after { right: 0; background: linear-gradient(270deg, var(--surface), transparent); }
+  .vote-ticker-track {
+    display: inline-flex; gap: 40px; padding: 0 20px;
+    animation: ticker-scroll var(--ticker-duration, 40s) linear infinite;
+  }
+  .vote-ticker:hover .vote-ticker-track { animation-play-state: paused; }
+  .vote-ticker-item {
+    flex-shrink: 0; font-size: 12px; color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .vote-ticker-item .ticker-label { font-weight: 600; }
+  .vote-ticker-item .ticker-factors { color: var(--text); }
+  .vote-ticker-item .ticker-reason { color: var(--dim); font-style: italic; }
+  .vote-ticker-item .ticker-sep { color: var(--dim); margin: 0 6px; }
+  @keyframes ticker-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
   /* News section */
   .news-section { margin-bottom: 32px; }
   .news-refreshed {
@@ -697,6 +781,11 @@
     </div>
   </div>
 
+  <!-- Live vote ticker -->
+  <div class="vote-ticker" id="vote-ticker" style="display:none">
+    <div class="vote-ticker-track" id="vote-ticker-track"></div>
+  </div>
+
   <div class="layout">
     <!-- Main content column -->
     <div class="main-col">
@@ -781,6 +870,7 @@
           <div class="poll-inline-buttons" id="poll-inline-buttons"></div>
         </div>
         <div id="poll-results-area" style="display:none"></div>
+        <div id="poll-followup" style="display:none"></div>
       </div>
 
 
@@ -859,6 +949,12 @@ const COUNTRY     = 'us';
 
 // Seed votes — 10,132 total, skewed toward "fucked"
 const SEED_VOTES_5 = { 20: 620, 40: 1185, 60: 2430, 80: 3512, 100: 2385 };
+
+// Factor categories for follow-up vote
+const VOTE_FACTORS = [
+  'Housing Crisis', 'Cost of Living', 'Healthcare',
+  'Jobs & AI', 'National Debt', 'Geopolitical', 'Markets & Economy'
+];
 const SEED_TOTAL = Object.values(SEED_VOTES_5).reduce((a, b) => a + b, 0);
 
 let currentScore = -1;
@@ -1257,10 +1353,71 @@ async function fetchPollResults() {
 
 async function submitInlinePollVote(level) {
   userVoteScore = level;
-  const backendScore = BUCKET_TO_BACKEND[level];
+  // Don't POST yet — show follow-up first
+  pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => {
+    b.disabled = true; b.style.opacity = '0.3';
+  });
+  // Highlight selected
+  const selected = pollBtnsWrap.querySelector(`[data-level="${level}"]`);
+  if (selected) { selected.style.opacity = '1'; selected.style.transform = 'scale(1.05)'; }
+  showFollowUp();
+}
 
-  pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; });
+function showFollowUp() {
+  const container = document.getElementById('poll-followup');
+  const pillsHtml = VOTE_FACTORS.map(f =>
+    `<button class="poll-factor-pill" data-factor="${f}">${f}</button>`
+  ).join('');
 
+  container.innerHTML = `
+    <p class="poll-followup-prompt mono">What's driving that?</p>
+    <div class="poll-factor-pills">${pillsHtml}</div>
+    <div class="poll-reason-wrap" style="text-align:center">
+      <input type="text" class="poll-reason-input" placeholder="Add a reason (optional)..." maxlength="140">
+    </div>
+    <div class="poll-followup-actions">
+      <button class="poll-followup-btn poll-submit-btn" onclick="submitFactors()">Submit</button>
+      <button class="poll-followup-btn poll-skip-btn" onclick="skipFactors()">Skip</button>
+    </div>`;
+  container.style.display = '';
+
+  container.querySelectorAll('.poll-factor-pill').forEach(pill => {
+    pill.addEventListener('click', () => pill.classList.toggle('active'));
+  });
+}
+
+async function submitFactors() {
+  const factors = [...document.querySelectorAll('.poll-factor-pill.active')]
+    .map(p => p.dataset.factor);
+  const reason = document.querySelector('.poll-reason-input')?.value?.trim() || null;
+  const backendScore = BUCKET_TO_BACKEND[userVoteScore];
+
+  try {
+    await fetch(`${BACKEND_URL}/api/poll`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        score: backendScore, country: COUNTRY,
+        factors: factors.length ? factors : null,
+        reason: reason || null
+      }),
+    });
+  } catch (e) {
+    console.warn('Poll submit failed:', e.message);
+  }
+
+  sessionStorage.setItem('jhfw_voted', '1');
+  document.getElementById('poll-followup').style.display = 'none';
+
+  const data = await fetchPollResults();
+  showPollResults(data);
+  const pd = computePollData(data);
+  updateMainScoreFromPoll(pd);
+  loadTicker(); // refresh ticker with new vote
+}
+
+async function skipFactors() {
+  const backendScore = BUCKET_TO_BACKEND[userVoteScore];
   try {
     await fetch(`${BACKEND_URL}/api/poll`, {
       method: 'POST',
@@ -1270,12 +1427,11 @@ async function submitInlinePollVote(level) {
   } catch (e) {
     console.warn('Poll submit failed:', e.message);
   }
-
   sessionStorage.setItem('jhfw_voted', '1');
+  document.getElementById('poll-followup').style.display = 'none';
 
   const data = await fetchPollResults();
   showPollResults(data);
-
   const pd = computePollData(data);
   updateMainScoreFromPoll(pd);
 }
@@ -1477,6 +1633,51 @@ if (trumpMobileImg) {
   }, { threshold: 0.3 });
   trumpObserver.observe(trumpMobileImg);
 }
+
+// -- LIVE VOTE TICKER --
+const SCORE_TO_LABEL = { 20:'NOT', 40:'SLIGHTLY', 60:'PROPERLY', 80:'ROYALLY', 100:'ABSOLUTELY' };
+const FLAG = { au:'\u{1F1E6}\u{1F1FA}', us:'\u{1F1FA}\u{1F1F8}' };
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+async function loadTicker() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/poll/recent?country=${COUNTRY}`);
+    if (!res.ok) return;
+    const votes = await res.json();
+    if (!votes.length) return;
+
+    const track = document.getElementById('vote-ticker-track');
+    const items = votes.map(v => {
+      const label = SCORE_TO_LABEL[v.score] || '??';
+      const color = getColor(v.score);
+      const factors = (v.factors || []).join(', ');
+      const reason = v.reason ? escapeHtml(v.reason) : '';
+      return `<span class="vote-ticker-item">${FLAG[v.country] || ''} <span class="ticker-label" style="color:${color}">Voted ${label} fucked</span>${factors ? '<span class="ticker-sep">\u2014</span><span class="ticker-factors">' + escapeHtml(factors) + '</span>' : ''}${reason ? '<span class="ticker-sep">\u2014</span><span class="ticker-reason">\u2018' + reason + '\u2019</span>' : ''}</span>`;
+    }).join('');
+
+    // Duplicate for seamless loop
+    track.innerHTML = items + items;
+    // Adjust speed based on content width
+    const tickerEl = document.getElementById('vote-ticker');
+    tickerEl.style.display = '';
+    const speed = Math.max(20, track.scrollWidth / 60); // ~60px/sec
+    track.style.setProperty('--ticker-duration', speed + 's');
+    // Reset animation
+    track.style.animation = 'none';
+    track.offsetHeight;
+    track.style.animation = '';
+  } catch (e) {
+    console.warn('Ticker load failed:', e.message);
+  }
+}
+
+loadTicker();
+setInterval(loadTicker, 60000);
 
 (async () => {
   try {

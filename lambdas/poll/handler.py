@@ -1,5 +1,5 @@
 """
-poll/handler.py — GET /api/poll and POST /api/poll
+poll/handler.py — GET /api/poll, GET /api/poll/recent, and POST /api/poll
 Stores and retrieves community poll votes from DynamoDB.
 """
 import json
@@ -45,9 +45,12 @@ def _get_country(event, from_body=False):
 
 def lambda_handler(event, context):
     method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
+    path = event.get("rawPath", "") or event.get("path", "")
 
     if method == "POST":
         return _submit_vote(event)
+    elif "/recent" in path:
+        return _get_recent(event)
     else:
         return _get_results(event)
 
@@ -66,14 +69,24 @@ def _submit_vote(event):
         ip_hash = hashlib.sha256(ip.encode()).hexdigest()[:16]
 
         ts = datetime.utcnow().isoformat()
-        table = _get_table()
-        table.put_item(Item={
+        item = {
             "vote_id": f"{ip_hash}_{ts}",
             "ts": ts,
             "score": score,
             "ip_hash": ip_hash,
             "country": country,
-        })
+        }
+
+        # Optional factor selections and reason
+        factors = body.get("factors")
+        if factors and isinstance(factors, list):
+            item["factors"] = factors[:7]
+        reason = body.get("reason")
+        if reason and isinstance(reason, str):
+            item["reason"] = reason[:140]
+
+        table = _get_table()
+        table.put_item(Item=item)
 
         return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps({"status": "ok"})}
     except Exception as e:
@@ -85,7 +98,6 @@ def _get_results(event):
     try:
         country = _get_country(event)
         table = _get_table()
-        # Scan all votes
         items = []
         kwargs = {}
         while True:
@@ -116,4 +128,41 @@ def _get_results(event):
         }
     except Exception as e:
         log.error("Poll results failed: %s", e, exc_info=True)
+        return {"statusCode": 500, "headers": CORS_HEADERS, "body": json.dumps({"error": str(e)})}
+
+
+def _get_recent(event):
+    """Return recent votes that include factor selections, for the live ticker."""
+    try:
+        country = _get_country(event)
+        table = _get_table()
+        items = []
+        kwargs = {}
+        while True:
+            resp = table.scan(**kwargs)
+            items.extend(resp.get("Items", []))
+            last = resp.get("LastEvaluatedKey")
+            if not last:
+                break
+            kwargs["ExclusiveStartKey"] = last
+
+        # Filter to votes with factors, for this country, sort by ts desc
+        filtered = [i for i in items
+                    if i.get("country", "au") == country and i.get("factors")]
+        filtered.sort(key=lambda x: x.get("ts", ""), reverse=True)
+        recent = filtered[:20]
+
+        result = [{"ts": i["ts"], "score": int(i["score"]),
+                   "factors": list(i.get("factors", [])),
+                   "reason": i.get("reason"),
+                   "country": i.get("country", "au")}
+                  for i in recent]
+
+        return {
+            "statusCode": 200,
+            "headers": CORS_HEADERS,
+            "body": json.dumps(result, default=str),
+        }
+    except Exception as e:
+        log.error("Recent votes failed: %s", e, exc_info=True)
         return {"statusCode": 500, "headers": CORS_HEADERS, "body": json.dumps({"error": str(e)})}
