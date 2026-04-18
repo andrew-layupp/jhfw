@@ -880,7 +880,7 @@ const SITE_URL    = 'https://howfuckedarewe.help';
 const SEED_VOTES_5 = { 20: 85, 40: 180, 60: 340, 80: 450, 100: 368 };
 const SEED_TOTAL = Object.values(SEED_VOTES_5).reduce((a, b) => a + b, 0);
 
-let currentScore = 62;
+let currentScore = 72;
 let userVoteScore = null;
 
 // 5-bucket config
@@ -1359,21 +1359,18 @@ function updateMainScoreFromPoll(pd, animate) {
     countEl.textContent = pd.total.toLocaleString();
   }
 
-  // Animate main score if changed
-  if (newScore !== currentScore) {
+  // Only re-animate if score actually changed AND it's not the first load
+  if (newScore !== currentScore && animate) {
     const mNum = document.getElementById('main-num');
     const mProg = document.getElementById('main-prog');
     const mVerdict = document.getElementById('main-verdict');
-    animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 200);
-    if (animate) {
-      // Big pulse on score change
-      const svg = document.getElementById('main-svg');
-      svg.style.transform = 'scale(1.08)';
-      svg.style.transition = 'transform 0.3s ease';
-      setTimeout(() => { svg.style.transform = ''; }, 300);
-    }
-    currentScore = newScore;
+    animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 0);
+    const svg = document.getElementById('main-svg');
+    svg.style.transform = 'scale(1.08)';
+    svg.style.transition = 'transform 0.3s ease';
+    setTimeout(() => { svg.style.transform = ''; }, 300);
   }
+  currentScore = newScore;
 
   lastPollTotal = pd.total;
   lastPollAvg = exactScore;
