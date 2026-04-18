@@ -11,12 +11,12 @@
 </script>
 <title>How fucked are we? — Fucked Index</title>
 <meta name="description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets. Updated regularly.">
-<link rel="canonical" href="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
+<link rel="canonical" href="https://howfuckedarewe.help">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇦🇺</text></svg>">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
+<meta property="og:url" content="https://howfuckedarewe.help">
 <meta property="og:title" content="How fucked are we? — Fucked Index">
 <meta property="og:description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets.">
 <meta property="og:site_name" content="Just How Fucked Are We?">
@@ -32,7 +32,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "How Fucked Is Australia?",
-  "url": "https://main.d2gbtqpbsyrhy1.amplifyapp.com/au",
+  "url": "https://howfuckedarewe.help",
   "description": "Real-time fucked index for Australia tracking housing, cost of living, jobs, climate, geopolitics and markets.",
   "applicationCategory": "News",
   "operatingSystem": "Any",
@@ -795,7 +795,7 @@
       <!-- Inline poll -->
       <div class="poll-inline fade-in-section" id="poll-section">
         <div class="poll-inline-prompt mono" id="poll-prompt">
-          <strong id="poll-count">1,047</strong> people have rated how fucked we are &mdash; have your say
+          <strong id="poll-count">1,423</strong> people have rated how fucked we are &mdash; have your say
         </div>
         <div id="poll-vote-area">
           <div class="poll-inline-buttons" id="poll-inline-buttons"></div>
@@ -872,7 +872,6 @@
 <script>
 // -- Config --
 const BACKEND_URL = window.JHFW_BACKEND || 'https://g7rq7p0rzi.execute-api.ap-southeast-2.amazonaws.com';
-const POLL_MS     = 5 * 60 * 1000;
 const SITE_URL    = 'https://howfuckedarewe.help';
 
 // Seed votes (10-point scale)
@@ -991,7 +990,7 @@ function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
       }
       if (p === 1) {
         if (numEl && numEl.id === 'main-num') {
-          document.getElementById('score-emoji').textContent = getEmoji(score);
+          // emoji removed from UI
           const svg = document.getElementById('main-svg');
           svg.style.animation = getGlowClass(score) + ' 3s ease-in-out infinite';
           currentScore = score;
@@ -1238,7 +1237,7 @@ function showPollResults(data) {
   const resultsArea = document.getElementById('poll-results-area');
   resultsArea.style.display = '';
 
-  const avgIdx = pd.avg100 >= 90 ? 4 : pd.avg100 >= 70 ? 3 : pd.avg100 >= 50 ? 2 : pd.avg100 >= 30 ? 1 : 0;
+  const avgIdx = pd.avg100 >= 80 ? 4 : pd.avg100 >= 60 ? 3 : pd.avg100 >= 40 ? 2 : pd.avg100 >= 20 ? 1 : 0;
   const avgColor = BUCKETS[avgIdx].color;
   let maxBucket = Math.max(...pd.buckets);
 
@@ -1389,8 +1388,9 @@ document.addEventListener('DOMContentLoaded', () => {
   updateMainScoreFromPoll(pd, false);
 })();
 
-// Poll every 10 seconds for live updates from other voters
+// Poll every 2 seconds for live updates (pauses when tab hidden)
 setInterval(async () => {
+  if (document.hidden) return;
   try {
     const data = await fetchPollResults();
     const pd = computePollData(data);
@@ -1516,133 +1516,7 @@ function renderSidebarNews(factors) {
   });
 }
 
-// -- Map API factor IDs to DATA.categories IDs --
-const API_TO_CATEGORY_ID = {
-  housing: 'housing',
-  cost_of_living: 'living',
-  jobs: 'jobs',
-  ai_jobs: 'jobs',       // ai_jobs maps to the jobs category card
-  climate: 'climate',
-  geopolitical: 'geo',
-  markets: 'markets',
-};
-
-// Weights for computing the overall score from API severity scores
-const SEVERITY_WEIGHTS = {
-  housing: 0.25,
-  cost_of_living: 0.20,
-  jobs: 0.15,
-  ai_jobs: 0.10,
-  climate: 0.10,
-  geopolitical: 0.10,
-  markets: 0.10,
-};
-
-function updateAlbo(score) {
-  const levels = [
-    { max: 20, gif: '/images/albo_cooked.gif', caption: "Not fucked", sub: "Albo reckons we're sweet" },
-    { max: 40, gif: '/images/albo_cooked.gif', caption: "Slightly fucked", sub: "Albo's getting a bit worried" },
-    { max: 60, gif: '/images/albo_cooked.gif', caption: "Properly fucked", sub: "Albo's sweating" },
-    { max: 80, gif: '/images/albo_cooked.gif', caption: "Royally fucked", sub: "Albo's lost the plot" },
-    { max: 100, gif: '/images/albo_cooked.gif', caption: "Absolutely fucked", sub: "Albo has given up" },
-  ];
-  const level = levels.find(l => score <= l.max) || levels[4];
-  const img = document.getElementById('albo-gif');
-  if (img && level.gif) img.src = level.gif + '?t=' + Date.now();
-
-  document.getElementById('albo-caption-text').textContent = level.caption;
-  document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
-}
-
-function updateScoresFromAPI(factors) {
-  const severityMap = {};
-  factors.forEach(f => {
-    if (f.severity_score != null) {
-      severityMap[f.id] = f;
-    }
-  });
-
-  // Update each dimension card
-  const categoryScoreUpdates = {};
-  factors.forEach(f => {
-    const catId = API_TO_CATEGORY_ID[f.id];
-    if (!catId || f.severity_score == null) return;
-
-    // For ai_jobs and jobs both mapping to 'jobs', take the higher score
-    if (categoryScoreUpdates[catId] != null && categoryScoreUpdates[catId] >= f.severity_score) return;
-    categoryScoreUpdates[catId] = f.severity_score;
-
-    // Update DATA.categories entry
-    const cat = DATA.categories.find(c => c.id === catId);
-    if (cat) {
-      cat.score = f.severity_score;
-      if (f.severity_summary) cat.detail = f.severity_summary;
-    }
-  });
-
-  // Re-render each sub-card gauge and detail text
-  Object.keys(categoryScoreUpdates).forEach(catId => {
-    const newScore = categoryScoreUpdates[catId];
-    const cat = DATA.categories.find(c => c.id === catId);
-    if (!cat) return;
-
-    // Skip if user already voted on this dimension
-    if (window._dimVoted && window._dimVoted[catId]) return;
-
-    // Update the gauge animation
-    const numEl = document.getElementById(`n-sc-${catId}`);
-    const progEl = document.getElementById(`p-sc-${catId}`);
-    if (numEl && progEl) {
-      animateVal(newScore, newScore, 55, 55, 37, numEl, progEl, null, 200);
-    }
-
-    // Update the detail text as bullet points from API severity summary
-    const detailEl = document.getElementById(`detail-${catId}`);
-    if (detailEl && cat.detail) {
-      // If the API gave us a severity_summary, split into sentences for bullets
-      const text = cat.detail;
-      // Check if it already has <ul> (fallback HTML) — if so, keep it
-      if (!text.includes('<ul>')) {
-        const sentences = text.replace(/\.\s+/g, '.|').split('|').filter(s => s.trim().length > 5).slice(0, 3);
-        if (sentences.length >= 2) {
-          detailEl.innerHTML = `<ul>${sentences.map(s => `<li>${s.trim()}</li>`).join('')}</ul>`;
-        }
-      }
-    }
-
-    // Add a relevant news article link
-    const newsLinkEl = document.getElementById(`news-link-${catId}`);
-    if (newsLinkEl) {
-      // Find matching factor in the raw API data
-      const apiFactorId = Object.keys(API_TO_CATEGORY_ID).find(k => API_TO_CATEGORY_ID[k] === catId);
-      const factor = factors.find(f => f.id === apiFactorId);
-      const topArticle = factor && factor.articles && factor.articles[0];
-      if (topArticle && topArticle.url) {
-        newsLinkEl.innerHTML = `<a href="${topArticle.url}" target="_blank" rel="noopener">📰 ${topArticle.headline || 'Latest article'}</a>`;
-      }
-    }
-  });
-
-  // Compute weighted overall score
-  let weightedSum = 0;
-  let totalWeight = 0;
-  Object.keys(SEVERITY_WEIGHTS).forEach(factorId => {
-    const factor = severityMap[factorId];
-    if (factor && factor.severity_score != null) {
-      weightedSum += factor.severity_score * SEVERITY_WEIGHTS[factorId];
-      totalWeight += SEVERITY_WEIGHTS[factorId];
-    }
-  });
-
-  // Main score comes from poll votes only — don't override here
-  // Just update the header indicator
-  if (totalWeight > 0) {
-    const indicator = document.getElementById('live-analysis-indicator');
-    if (indicator) {
-      indicator.textContent = 'Live data and news analysis';
-    }
-  }
-}
+// Scores are purely user-vote driven — no API severity overrides
 
 (async () => {
   try {
@@ -1651,7 +1525,9 @@ function updateScoresFromAPI(factors) {
     const factors = await res.json();
 
     renderSidebarNews(factors);
-    updateScoresFromAPI(factors);
+    // Update header indicator
+    const indicator = document.getElementById('live-analysis-indicator');
+    if (indicator) indicator.textContent = 'Live data and news analysis';
   } catch (e) {
     console.warn('News fetch failed:', e.message);
   }
