@@ -437,7 +437,7 @@
   /* Dimension voting */
   .dim-vote { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
   .dim-vote-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; }
-  .dim-vote-buttons { display: flex; gap: 3px; flex-wrap: wrap; }
+  .dim-vote-buttons { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
   .dim-vote-btn {
     font-size: 9px; padding: 4px 6px; border-radius: 4px;
     border: 1px solid var(--border); background: var(--surface2);
@@ -837,8 +837,10 @@ const POLL_MS     = 5 * 60 * 1000;
 const SITE_URL    = 'https://howfuckedarewe.help';
 
 // Seed votes (10-point scale)
-const SEED_VOTES = {1: 12, 2: 28, 3: 45, 4: 67, 5: 89, 6: 134, 7: 198, 8: 267, 9: 312, 10: 271};
-const SEED_TOTAL = Object.values(SEED_VOTES).reduce((a, b) => a + b, 0);
+// Seed votes: not=20, slightly=40, properly=60, royally=80, absolutely=100
+// Total: 1423, avg: ~72/100
+const SEED_VOTES_5 = { 20: 85, 40: 180, 60: 340, 80: 450, 100: 368 };
+const SEED_TOTAL = Object.values(SEED_VOTES_5).reduce((a, b) => a + b, 0);
 
 let currentScore = 62;
 let userVoteScore = null;
@@ -852,11 +854,11 @@ const BUCKETS = [
   { label: 'Absolutely', color: '#8b1a1a', backendScores: [9, 10] },
 ];
 
-const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
+const BUCKET_TO_BACKEND = { 1: 20, 2: 40, 3: 60, 4: 80, 5: 100 };
 
 // -- AU-specific static data --
 const DATA = {
-  overall: 70,
+  overall: 72,
   categories: [
     { id:'housing',  label:'Housing & Debt',   score:85, weight:25, detail:'<ul><li>$2.5T mortgage debt \u2014 highest debt-to-income ratio in the Western world</li><li>Sydney median house price at $1.6M, rental vacancy 0.8% (record low)</li><li>Entire economy built around servicing property with borrowed money</li></ul>', sources:[{label:'ABS',url:'https://www.abs.gov.au/'}], sourceShort:'ABS, SQM Research, RBA' },
     { id:'living',   label:'Cost of Living',  score:75, weight:20, detail:'<ul><li>Petrol back above $2/litre in most capitals \u2014 commuters copping it</li><li>CPI at 3.6%, RBA holding at 4.10%, electricity up 20%</li><li>Groceries, insurance and rent all surging while wages lag behind</li></ul>', sources:[{label:'RBA',url:'https://www.rba.gov.au/'}], sourceShort:'ABS CPI, RBA cash rate, petrol data' },
@@ -1086,21 +1088,36 @@ document.getElementById('sub-grid').addEventListener('click', function(e) {
   if (!btn) return;
   const dimId = btn.dataset.dim;
   const userScore = parseInt(btn.dataset.score, 10);
-  localStorage.setItem('jhfw_dim_' + dimId, userScore);
-  // Blend user vote with seed score (as if 1 vote among ~200 existing)
+  // Simple math: blend 1 user vote into ~200 seed votes
+  // newScore = (seedScore * 200 + userVote) / 201
   const cat = DATA.categories.find(c => c.id === dimId);
   const seedScore = cat ? cat.score : 50;
-  const SEED_VOTES = 200;
-  const blended = Math.round((seedScore * SEED_VOTES + userScore) / (SEED_VOTES + 1));
+  const blended = Math.round((seedScore * 200 + userScore) / 201);
+  // Mark as voted so API update doesn't overwrite
+  if (!window._dimVoted) window._dimVoted = {};
+  window._dimVoted[dimId] = blended;
   const numEl = document.getElementById('n-sc-' + dimId);
   const progEl = document.getElementById('p-sc-' + dimId);
   if (numEl && progEl) {
     animateVal(blended, blended, 55, 55, 37, numEl, progEl, null, 0);
   }
-  // Replace buttons with "Voted!" text
+  // Dissolve unselected buttons, highlight the chosen one
   const voteContainer = document.getElementById('dim-vote-' + dimId);
   if (voteContainer) {
-    voteContainer.querySelector('.dim-vote-buttons').innerHTML = '<div class="dim-voted mono">Voted!</div>';
+    voteContainer.querySelectorAll('.dim-vote-btn').forEach(b => {
+      if (b === btn) {
+        b.style.opacity = '1';
+        b.style.borderColor = b.style.color;
+        b.style.background = b.style.color + '22';
+        b.style.fontWeight = '700';
+        b.disabled = true;
+      } else {
+        b.style.transition = 'opacity 0.5s';
+        b.style.opacity = '0';
+        b.style.pointerEvents = 'none';
+        setTimeout(() => b.style.display = 'none', 500);
+      }
+    });
   }
 });
 
@@ -1139,31 +1156,31 @@ function renderSignalCards(signals, containerId, limit) {
 // Sidebar now shows cached news (rendered by renderSidebarNews below)
 
 // -- POLL SYSTEM --
-function mergeToBuckets(dist) {
-  return BUCKETS.map((b, i) => {
-    let count = 0;
-    b.backendScores.forEach(s => { count += (dist[s] || 0); });
-    return count;
-  });
-}
-
 function computePollData(apiData) {
-  const dist = {};
-  for (let i = 1; i <= 10; i++) {
-    const real = (apiData && apiData.distribution && apiData.distribution[i]) || 0;
-    dist[i] = real + (SEED_VOTES[i] || 0);
+  // Map backend votes (which are now 20/40/60/80/100) into 5 buckets
+  // Also handle old 1-10 scale votes by mapping: 1-2→20, 3-4→40, 5-6→60, 7-8→80, 9-10→100
+  const scores = [20, 40, 60, 80, 100];
+  const buckets = [0, 0, 0, 0, 0]; // Not, Slightly, Properly, Royally, Absolutely
+
+  // Add seed votes
+  scores.forEach((s, i) => { buckets[i] += SEED_VOTES_5[s] || 0; });
+
+  // Add real API votes
+  if (apiData && apiData.distribution) {
+    const d = apiData.distribution;
+    // Map any scale to our 5 buckets
+    buckets[0] += (d['1']||0) + (d['2']||0) + (d['20']||0);
+    buckets[1] += (d['3']||0) + (d['4']||0) + (d['40']||0);
+    buckets[2] += (d['5']||0) + (d['6']||0) + (d['60']||0);
+    buckets[3] += (d['7']||0) + (d['8']||0) + (d['80']||0);
+    buckets[4] += (d['9']||0) + (d['10']||0) + (d['100']||0);
   }
-  let total = 0;
-  let weighted = 0;
-  for (let i = 1; i <= 10; i++) {
-    total += dist[i];
-    weighted += i * dist[i];
-  }
-  const avg10 = total > 0 ? weighted / total : 0;
-  const avg100 = total > 0 ? avg10 * 10 : 0; // scale to 0-100
-  const avg5 = total > 0 ? (avg10 - 1) / 9 * 4 + 1 : 0;
-  const buckets = mergeToBuckets(dist);
-  return { buckets, total, avg5, avg100 };
+
+  const total = buckets.reduce((a, b) => a + b, 0);
+  const weighted = buckets.reduce((sum, count, i) => sum + count * scores[i], 0);
+  const avg100 = total > 0 ? Math.round(weighted / total) : 0;
+
+  return { buckets, total, avg100 };
 }
 
 const pollBtnsWrap = document.getElementById('poll-inline-buttons');
@@ -1182,7 +1199,8 @@ function showPollResults(data) {
   const resultsArea = document.getElementById('poll-results-area');
   resultsArea.style.display = '';
 
-  const avgColor = BUCKETS[Math.min(4, Math.max(0, Math.round(pd.avg5) - 1))].color;
+  const avgIdx = pd.avg100 >= 90 ? 4 : pd.avg100 >= 70 ? 3 : pd.avg100 >= 50 ? 2 : pd.avg100 >= 30 ? 1 : 0;
+  const avgColor = BUCKETS[avgIdx].color;
   let maxBucket = Math.max(...pd.buckets);
 
   let barsHtml = '';
@@ -1461,6 +1479,9 @@ function updateScoresFromAPI(factors) {
     const newScore = categoryScoreUpdates[catId];
     const cat = DATA.categories.find(c => c.id === catId);
     if (!cat) return;
+
+    // Skip if user already voted on this dimension
+    if (window._dimVoted && window._dimVoted[catId]) return;
 
     // Update the gauge animation
     const numEl = document.getElementById(`n-sc-${catId}`);
