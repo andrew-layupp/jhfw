@@ -434,6 +434,19 @@
   .sub-card-source a { color: var(--dim); text-decoration: none; border-bottom: 1px dotted #333; }
   .sub-card-source a:hover { color: var(--muted); }
 
+  /* Dimension voting */
+  .dim-vote { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .dim-vote-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; }
+  .dim-vote-buttons { display: flex; gap: 3px; flex-wrap: wrap; }
+  .dim-vote-btn {
+    font-size: 9px; padding: 4px 6px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); cursor: pointer; font-family: 'IBM Plex Mono', monospace;
+    transition: transform 0.1s, border-color 0.2s;
+  }
+  .dim-vote-btn:hover { transform: scale(1.05); border-color: #555; }
+  .dim-voted { font-size: 10px; color: var(--muted); text-align: center; padding: 4px 0; }
+
   /* Signals */
   .signals-section { margin-bottom: 32px; }
   .signal-card {
@@ -779,7 +792,7 @@
 
     <!-- Share section (outside main-col for mobile reordering) -->
     <div class="share-section fade-in-section" id="share-section" style="width:100%">
-      <h3 class="mono">Want a laugh? Share how fucked we are</h3>
+      <h3 class="mono">Get your mates to vote — share the fucked index</h3>
         <div class="share-buttons">
           <button class="share-btn twitter" onclick="shareTwitter()">
             <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -821,7 +834,7 @@
 // -- Config --
 const BACKEND_URL = window.JHFW_BACKEND || 'https://g7rq7p0rzi.execute-api.ap-southeast-2.amazonaws.com';
 const POLL_MS     = 5 * 60 * 1000;
-const SITE_URL    = 'https://main.d2gbtqpbsyrhy1.amplifyapp.com/au';
+const SITE_URL    = 'https://howfuckedarewe.help';
 
 // Seed votes (10-point scale)
 const SEED_VOTES = {1: 12, 2: 28, 3: 45, 4: 67, 5: 89, 6: 134, 7: 198, 8: 267, 9: 312, 10: 271};
@@ -952,8 +965,17 @@ function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
 }
 
 // -- Share functions --
-function getShareText(score) {
-  return `Australia is currently ${score || currentScore}/100 fucked. See the live fucked index:`;
+function getShareLabel() {
+  const s = currentScore;
+  if (s >= 80) return 'absolutely';
+  if (s >= 60) return 'royally';
+  if (s >= 40) return 'properly';
+  if (s >= 20) return 'slightly';
+  return 'not';
+}
+
+function getShareText() {
+  return `Apparently Australia's ${getShareLabel()} fucked — do you agree? Cast your vote here:`;
 }
 
 function shareTwitter(customText) {
@@ -962,7 +984,7 @@ function shareTwitter(customText) {
 }
 
 function shareFacebook() {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`, '_blank');
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}&quote=${encodeURIComponent(getShareText())}`, '_blank');
 }
 
 function shareLinkedIn() {
@@ -970,20 +992,18 @@ function shareLinkedIn() {
 }
 
 function shareReddit() {
-  const title = `Australia is ${currentScore}/100 fucked right now`;
-  window.open(`https://reddit.com/submit?url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent(title)}`, '_blank');
+  window.open(`https://reddit.com/submit?url=${encodeURIComponent(SITE_URL)}&title=${encodeURIComponent(getShareText())}`, '_blank');
 }
 
 function shareInstagram() {
-  // Instagram doesn't support direct URL sharing — copy link and open Instagram
-  navigator.clipboard.writeText(`Australia is ${currentScore}/100 fucked right now. ${SITE_URL}`).then(() => {
+  navigator.clipboard.writeText(`${getShareText()} ${SITE_URL}`).then(() => {
     window.open('https://www.instagram.com/', '_blank');
     alert('Link copied! Paste it into your Instagram story or post.');
   });
 }
 
 function copyLink() {
-  navigator.clipboard.writeText(SITE_URL).then(() => {
+  navigator.clipboard.writeText(`${getShareText()} ${SITE_URL}`).then(() => {
     const btns = document.querySelectorAll('.share-btn.copy');
     btns.forEach(btn => {
       const orig = btn.innerHTML;
@@ -1031,6 +1051,15 @@ DATA.categories.forEach((cat, i) => {
   const sourcesHtml = (cat.sources || []).map(s =>
     `<a href="${s.url}" target="_blank" rel="noopener">${s.label}</a>`
   ).join(' \u00B7 ');
+  const DIM_VOTE_COLORS = ['#00b386','#7ab800','#ff8c00','#ff3333','#8b1a1a'];
+  const DIM_VOTE_LABELS = ['Not','Slightly','Properly','Royally','Absolutely'];
+  const DIM_VOTE_SCORES = [10, 30, 50, 70, 90];
+  const existingVote = localStorage.getItem('jhfw_dim_' + cat.id);
+  const dimBtnsHtml = existingVote
+    ? `<div class="dim-voted mono">Voted!</div>`
+    : DIM_VOTE_LABELS.map((lbl, vi) =>
+        `<button class="dim-vote-btn" data-dim="${cat.id}" data-score="${DIM_VOTE_SCORES[vi]}" style="border-color:${DIM_VOTE_COLORS[vi]}44;color:${DIM_VOTE_COLORS[vi]}">${lbl}</button>`
+      ).join('');
   card.innerHTML = `
     <svg width="110" height="86" viewBox="0 0 110 110" preserveAspectRatio="xMidYMin slice" style="display:block;margin:0 auto">
       <path d="${arcD(55,55,37,225,270)}" fill="none" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
@@ -1042,12 +1071,38 @@ DATA.categories.forEach((cat, i) => {
       <div class="sub-card-label mono">${cat.label}</div>
       <div class="sub-card-detail" id="detail-${cat.id}">${cat.detail}</div>
       <div class="sub-card-news" id="news-link-${cat.id}"></div>
+      <div class="dim-vote" id="dim-vote-${cat.id}">
+        <div class="dim-vote-label mono">Rate this:</div>
+        <div class="dim-vote-buttons">${dimBtnsHtml}</div>
+      </div>
     </div>`;
   grid.appendChild(card);
-  animateVal(cat.score, cat.score, 55, 55, 37,
+  // If user previously voted on this dimension, use their score
+  const savedDimScore = existingVote ? parseInt(existingVote, 10) : cat.score;
+  animateVal(savedDimScore, savedDimScore, 55, 55, 37,
     document.getElementById(`n-sc-${cat.id}`),
     document.getElementById(`p-sc-${cat.id}`),
     null, 600 + i * 130);
+});
+
+// Dimension vote click handlers
+document.getElementById('sub-grid').addEventListener('click', function(e) {
+  const btn = e.target.closest('.dim-vote-btn');
+  if (!btn) return;
+  const dimId = btn.dataset.dim;
+  const score = parseInt(btn.dataset.score, 10);
+  localStorage.setItem('jhfw_dim_' + dimId, score);
+  // Re-animate gauge with user's vote
+  const numEl = document.getElementById('n-sc-' + dimId);
+  const progEl = document.getElementById('p-sc-' + dimId);
+  if (numEl && progEl) {
+    animateVal(score, score, 55, 55, 37, numEl, progEl, null, 0);
+  }
+  // Replace buttons with "Voted!" text
+  const voteContainer = document.getElementById('dim-vote-' + dimId);
+  if (voteContainer) {
+    voteContainer.querySelector('.dim-vote-buttons').innerHTML = '<div class="dim-voted mono">Voted!</div>';
+  }
 });
 
 // Methodology section removed from page
