@@ -15,9 +15,12 @@ from decimal import Decimal
 
 import boto3
 
-from collectors.us_scrapboard import fetch_all_factors, fetch_factor, FACTORS
-
 log = logging.getLogger(__name__)
+
+# Lazy import — only needed by lambda_handler and cache_handler, not read_handler
+def _load_scrapboard():
+    from collectors.us_scrapboard import fetch_all_factors, fetch_factor, FACTORS
+    return fetch_all_factors, fetch_factor, FACTORS
 log.setLevel(logging.INFO)
 
 CORS_HEADERS = {
@@ -41,6 +44,7 @@ def _get_table():
 
 def lambda_handler(event, context):
     try:
+        fetch_all_factors, fetch_factor, FACTORS = _load_scrapboard()
         path = event.get("rawPath", "") or event.get("path", "")
         path_params = event.get("pathParameters") or {}
         factor_id = path_params.get("factor_id")
@@ -67,6 +71,7 @@ def lambda_handler(event, context):
 def cache_handler(event, context):
     """Runs Claude web search for all US factors and caches results in DynamoDB."""
     try:
+        fetch_all_factors, fetch_factor, FACTORS = _load_scrapboard()
         log.info("Starting scheduled US scrapboard cache refresh...")
         results = asyncio.run(fetch_all_factors())
         table = _get_table()
@@ -132,7 +137,10 @@ def read_handler(event, context):
                 entry["severity_summary"] = item["severity_summary"]
             results.append(entry)
 
-        order = {f["id"]: i for i, f in enumerate(FACTORS)}
+        # Sort order without importing scrapboard module
+        _FACTOR_ORDER = ["housing", "cost_of_living", "healthcare", "jobs",
+                         "national_debt", "geopolitical", "markets"]
+        order = {fid: i for i, fid in enumerate(_FACTOR_ORDER)}
         results.sort(key=lambda x: order.get(x["id"], 99))
 
         return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps(results)}

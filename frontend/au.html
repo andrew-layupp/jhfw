@@ -1394,6 +1394,13 @@ async function fetchPollResults() {
 
 async function submitInlinePollVote(level) {
   userVoteScore = level;
+  // Optimistically update counter immediately
+  const countEl = document.getElementById('poll-count');
+  const currentCount = parseInt(countEl.textContent.replace(/,/g, ''), 10) || 0;
+  smoothTickCount(countEl, currentCount, currentCount + 1, 400);
+  countEl.classList.add('score-tick-up');
+  setTimeout(() => countEl.classList.remove('score-tick-up'), 600);
+
   // Don't POST yet — show follow-up first
   pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => {
     b.disabled = true; b.style.opacity = '0.3';
@@ -1411,14 +1418,13 @@ function showFollowUp() {
   ).join('');
 
   container.innerHTML = `
-    <p class="poll-followup-prompt mono">What's driving that?</p>
+    <p class="poll-followup-prompt mono" style="margin-top:8px">What's driving that?</p>
     <div class="poll-factor-pills">${pillsHtml}</div>
     <div class="poll-reason-wrap" style="text-align:center">
-      <input type="text" class="poll-reason-input" placeholder="Add a reason (optional)..." maxlength="140">
+      <input type="text" class="poll-reason-input" placeholder="Add a short reason (optional)..." maxlength="140">
     </div>
     <div class="poll-followup-actions">
       <button class="poll-followup-btn poll-submit-btn" onclick="submitFactors()">Submit</button>
-      <button class="poll-followup-btn poll-skip-btn" onclick="skipFactors()">Skip</button>
     </div>`;
   container.style.display = '';
 
