@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How Fucked Is Australia? &#127462;&#127482; — Chaos Index</title>
+<title>How fucked are we? &#127462;&#127482; — Chaos Index</title>
 <meta name="description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets. Updated regularly.">
 <link rel="canonical" href="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇦🇺</text></svg>">
 
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
-<meta property="og:title" content="How Fucked Is Australia? &#127462;&#127482; — Chaos Index">
+<meta property="og:title" content="How fucked are we? &#127462;&#127482; — Chaos Index">
 <meta property="og:description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets.">
 <meta property="og:site_name" content="Just How Fucked Are We?">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="How Fucked Is Australia? &#127462;&#127482; — Chaos Index">
+<meta name="twitter:title" content="How fucked are we? &#127462;&#127482; — Chaos Index">
 <meta name="twitter:description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets.">
 
 <!-- JSON-LD Structured Data -->
@@ -26,7 +27,7 @@
   "@type": "WebApplication",
   "name": "How Fucked Is Australia?",
   "url": "https://main.d2gbtqpbsyrhy1.amplifyapp.com/au",
-  "description": "Real-time chaos index for Australia tracking housing, cost of living, jobs, climate, geopolitics and markets.",
+  "description": "Real-time fucked index for Australia tracking housing, cost of living, jobs, climate, geopolitics and markets.",
   "applicationCategory": "News",
   "operatingSystem": "Any",
   "offers": {
@@ -149,7 +150,7 @@
   .layout { display: flex; gap: 28px; }
   .main-col { flex: 1; min-width: 0; }
   .sidebar-col { width: 340px; flex-shrink: 0; }
-  .sidebar-inner { position: sticky; top: 24px; }
+  .sidebar-inner { position: sticky; top: 24px; max-height: calc(100vh - 48px); overflow-y: auto; }
   .sidebar-card {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -636,13 +637,6 @@
 
 <div class="page-wrapper">
 
-  <!-- Country selector -->
-  <div class="country-selector">
-    <a href="/" class="country-btn"><span class="flag">&#127758;</span> Global</a>
-    <a href="/us" class="country-btn"><span class="flag">&#127482;&#127480;</span> US</a>
-    <a href="/au" class="country-btn active"><span class="flag">&#127462;&#127482;</span> AU</a>
-    <a href="/au-scrapboard" class="country-btn"><span class="flag">&#128269;</span> Research</a>
-  </div>
 
   <!-- Header -->
   <div class="page-header">
@@ -672,9 +666,9 @@
 
       <!-- Hero -->
       <div class="hero">
-        <h1 class="bbn site-title">How Fucked Is Australia? &#127462;&#127482;</h1>
+        <h1 class="bbn site-title">How fucked are we? &#127462;&#127482;</h1>
         <p class="mono tagline">
-          Real-time chaos index for Australia. Housing, cost of living, jobs, climate & more.
+          Real-time fucked index for Australia. Housing, cost of living, jobs, climate & more.
         </p>
       </div>
 
@@ -712,15 +706,15 @@
       <div class="scale-bar">
         <div class="scale-seg">
           <div class="scale-line" style="background:#00b386"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Fine</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">She'll be right</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#7ab800"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Tense</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Bit dodge</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#ff8c00"></div>
-          <div class="mono" style="font-size:9px;color:var(--muted)">Not great</div>
+          <div class="mono" style="font-size:9px;color:var(--muted)">Gone to shit</div>
         </div>
         <div class="scale-seg">
           <div class="scale-line" style="background:#ff3333"></div>
@@ -747,24 +741,6 @@
       <div class="fade-in-section">
         <div class="section-label mono">By dimension</div>
         <div class="sub-grid" id="sub-grid"></div>
-      </div>
-
-      <!-- Latest News -->
-      <div class="news-section fade-in-section" id="news-section">
-        <div class="section-label mono">Latest News</div>
-        <div class="news-refreshed mono" id="news-refreshed">
-          <div class="live-dot"></div>
-          <span>Loading news...</span>
-        </div>
-        <div id="news-factors">
-          <div class="news-loading mono">Fetching latest articles...</div>
-        </div>
-      </div>
-
-      <!-- Methodology -->
-      <div class="methodology-section fade-in-section">
-        <div class="section-label mono">How we calculate this</div>
-        <div class="methodology-card" id="methodology-card"></div>
       </div>
 
       <!-- Share section -->
@@ -834,11 +810,11 @@ let userVoteScore = null;
 
 // 5-bucket config
 const BUCKETS = [
-  { label: 'Fine',      color: '#00b386', backendScores: [1, 2] },
-  { label: 'Tense',     color: '#7ab800', backendScores: [3, 4] },
-  { label: 'Not Great',  color: '#ff8c00', backendScores: [5, 6] },
-  { label: 'Fucked',    color: '#ff3333', backendScores: [7, 8] },
-  { label: 'Cooked',    color: '#8b1a1a', backendScores: [9, 10] },
+  { label: "She'll be right", color: '#00b386', backendScores: [1, 2] },
+  { label: 'Bit dodge',      color: '#7ab800', backendScores: [3, 4] },
+  { label: 'Gone to shit',   color: '#ff8c00', backendScores: [5, 6] },
+  { label: 'Fucked',         color: '#ff3333', backendScores: [7, 8] },
+  { label: 'Cooked',         color: '#8b1a1a', backendScores: [9, 10] },
 ];
 
 const BUCKET_TO_BACKEND = { 1: 2, 2: 4, 3: 6, 4: 8, 5: 10 };
@@ -1124,9 +1100,10 @@ function computePollData(apiData) {
     weighted += i * dist[i];
   }
   const avg10 = total > 0 ? weighted / total : 0;
+  const avg100 = total > 0 ? avg10 * 10 : 0; // scale to 0-100
   const avg5 = total > 0 ? (avg10 - 1) / 9 * 4 + 1 : 0;
   const buckets = mergeToBuckets(dist);
-  return { buckets, total, avg5 };
+  return { buckets, total, avg5, avg100 };
 }
 
 const pollBtnsWrap = document.getElementById('poll-inline-buttons');
@@ -1164,8 +1141,8 @@ function showPollResults(data) {
 
   resultsArea.innerHTML = `
     <div class="poll-results">
-      <div class="poll-results-avg mono" style="color:${avgColor}">${pd.avg5.toFixed(1)} / 5</div>
-      <div class="poll-results-avg-label mono">Community average</div>
+      <div class="poll-results-avg mono" style="color:${avgColor}">${Math.round(pd.avg100)} / 100</div>
+      <div class="poll-results-avg-label mono">The people reckon</div>
       <div class="poll-results-bars">${barsHtml}</div>
       <div class="poll-results-total mono">${pd.total.toLocaleString()} total votes</div>
     </div>`;
@@ -1324,19 +1301,16 @@ function renderSidebarNews(factors) {
   if (!container) return;
   container.innerHTML = '';
 
+  const factorIcons = { housing:'🏠', cost_of_living:'💸', jobs:'👷', ai_jobs:'🤖', climate:'🌡️', geopolitical:'🌏', markets:'📈' };
   top.forEach(art => {
     const rel = getRelevanceBadge(art.relevance_score || 0);
-    const catKey = art.factorId === 'cost_of_living' ? 'living'
-      : art.factorId === 'ai_jobs' ? 'jobs'
-      : art.factorId === 'geopolitical' ? 'geopolitics'
-      : art.factorId;
+    const icon = factorIcons[art.factorId] || '📋';
     const el = document.createElement('div');
     el.className = 'sidebar-news-article';
     el.innerHTML = `
-      <span class="sidebar-news-headline">${art.url ? `<a href="${art.url}" target="_blank" rel="noopener">${art.headline}</a>` : art.headline}</span>
+      <span class="sidebar-news-headline"><span style="margin-right:6px">${icon}</span>${art.url ? `<a href="${art.url}" target="_blank" rel="noopener">${art.headline}</a>` : art.headline}</span>
       <div class="sidebar-signal-meta">
         ${art.source ? `<span class="badge badge-source mono">${art.source}</span>` : ''}
-        <span class="badge badge-cat-${catKey} mono">${art.factorLabel}</span>
         <span class="badge ${rel.cls} mono">${rel.label}</span>
       </div>`;
     container.appendChild(el);
