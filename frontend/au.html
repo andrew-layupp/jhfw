@@ -149,8 +149,8 @@
 
   .layout { display: flex; gap: 28px; }
   .main-col { flex: 1; min-width: 0; }
-  .sidebar-col { width: 340px; flex-shrink: 0; }
-  .sidebar-inner { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; }
+  .sidebar-col { width: 340px; flex-shrink: 0; min-height: 100%; }
+  .sidebar-inner { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; scrollbar-gutter: stable; }
   .sidebar-inner::-webkit-scrollbar { width: 4px; }
   .sidebar-inner::-webkit-scrollbar-track { background: transparent; }
   .sidebar-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
@@ -159,8 +159,7 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
-    max-height: calc(100vh - 48px);
-    overflow-y: auto;
+    overflow-y: visible;
   }
   .sidebar-card::-webkit-scrollbar { width: 4px; }
   .sidebar-card::-webkit-scrollbar-track { background: transparent; }
@@ -410,6 +409,11 @@
   .sub-card:hover { border-color: #444; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
   .sub-card-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text); margin-bottom: 5px; }
   .sub-card-detail { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .sub-card-detail ul { margin: 4px 0 0 14px; padding: 0; }
+  .sub-card-detail ul li { margin-bottom: 2px; }
+  .sub-card-news { margin-top: 6px; }
+  .sub-card-news a { font-size: 9px; color: var(--dim); text-decoration: none; border-bottom: 1px dotted #333; }
+  .sub-card-news a:hover { color: var(--muted); }
   .sub-card-source { font-size: 9px; margin-top: 6px; }
   .sub-card-source a { color: var(--dim); text-decoration: none; border-bottom: 1px dotted #333; }
   .sub-card-source a:hover { color: var(--muted); }
@@ -1035,8 +1039,8 @@ DATA.categories.forEach((cat, i) => {
     </svg>
     <div style="margin-top:-4px">
       <div class="sub-card-label mono">${cat.label}</div>
-      <div class="sub-card-detail">${cat.detail}</div>
-      ${sourcesHtml ? `<div class="sub-card-source mono">${sourcesHtml}</div>` : ''}
+      <div class="sub-card-detail" id="detail-${cat.id}">${cat.detail}</div>
+      <div class="sub-card-news" id="news-link-${cat.id}"></div>
     </div>`;
   grid.appendChild(card);
   animateVal(cat.score, cat.score, 55, 55, 37,
@@ -1295,7 +1299,7 @@ function renderSidebarNews(factors) {
     });
   });
   allArticles.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
-  const top = allArticles.slice(0, 10);
+  const top = allArticles.slice(0, 35);
 
   if (top.length === 0) return;
 
@@ -1396,17 +1400,25 @@ function updateScoresFromAPI(factors) {
       animateVal(newScore, newScore, 55, 55, 37, numEl, progEl, null, 200);
     }
 
-    // Update the detail text on the card
-    const cards = document.querySelectorAll('.sub-card');
-    cards.forEach(card => {
-      const labelEl = card.querySelector('.sub-card-label');
-      if (labelEl && labelEl.textContent.trim() === cat.label) {
-        const detailEl = card.querySelector('.sub-card-detail');
-        if (detailEl && cat.detail) {
-          detailEl.textContent = cat.detail;
-        }
+    // Update the detail text as bullet points
+    const detailEl = document.getElementById(`detail-${catId}`);
+    if (detailEl && cat.detail) {
+      // Split summary into sentences and show as 3 bullet points
+      const sentences = cat.detail.replace(/\.\s+/g, '.|').split('|').filter(s => s.trim().length > 5).slice(0, 3);
+      detailEl.innerHTML = `<ul>${sentences.map(s => `<li>${s.trim()}</li>`).join('')}</ul>`;
+    }
+
+    // Add a relevant news article link
+    const newsLinkEl = document.getElementById(`news-link-${catId}`);
+    if (newsLinkEl) {
+      // Find matching factor in the raw API data
+      const apiFactorId = Object.keys(API_TO_CATEGORY_ID).find(k => API_TO_CATEGORY_ID[k] === catId);
+      const factor = factors.find(f => f.id === apiFactorId);
+      const topArticle = factor && factor.articles && factor.articles[0];
+      if (topArticle && topArticle.url) {
+        newsLinkEl.innerHTML = `<a href="${topArticle.url}" target="_blank" rel="noopener">📰 ${topArticle.headline || 'Latest article'}</a>`;
       }
-    });
+    }
   });
 
   // Compute weighted overall score
