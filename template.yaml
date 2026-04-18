@@ -36,6 +36,35 @@ Resources:
 
   # ── Lambda Functions ──────────────────────────────────────────────────────────
 
+  PollFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: jhfw-poll
+      CodeUri: lambdas/poll/
+      Handler: handler.lambda_handler
+      Description: GET/POST /api/poll — community poll votes
+      Timeout: 10
+      MemorySize: 256
+      Environment:
+        Variables:
+          POLL_TABLE: !Ref PollTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref PollTable
+      Events:
+        GetPoll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/poll
+            Method: GET
+        PostPoll:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /api/poll
+            Method: POST
+
   ApiCurrentFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -221,6 +250,18 @@ Resources:
           KeyType: HASH
         - AttributeName: text
           KeyType: RANGE
+
+  PollTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: jhfw-poll
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: vote_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: vote_id
+          KeyType: HASH
 
   ScrapboardTable:
     Type: AWS::DynamoDB::Table

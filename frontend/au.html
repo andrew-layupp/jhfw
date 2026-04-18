@@ -298,10 +298,11 @@
     position: absolute;
     top: 0; left: 0;
     opacity: 0;
-    transition: opacity 1.2s ease;
+    transition: opacity 1.5s ease-in-out;
   }
-  .albo-hero img.active { opacity: 1; position: relative; }
-  .albo-hero img.behind { opacity: 0; }
+  .albo-hero img:first-of-type { position: relative; } /* first img sets height */
+  .albo-hero img.active { opacity: 1; }
+  .albo-hero img.blend { opacity: 0.5; } /* mid-transition blend */
   .albo-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -1374,42 +1375,46 @@ const SEVERITY_WEIGHTS = {
 };
 
 function updateAlbo(score) {
-  // Determine which Albo to show: 1=fine, 2=tense, 3=notgreat, 4=fucked, 5=cooked
   const levels = [
     { max: 20, img: 1, caption: "She'll be right, mate", sub: "Albo is calm" },
     { max: 40, img: 2, caption: "Things are getting a bit tense", sub: "Albo is concerned" },
     { max: 60, img: 3, caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
-    { max: 80, img: 4, caption: "We're properly cooked here", sub: "Albo is losing it" },
+    { max: 80, img: 4, caption: "We're properly fucked here", sub: "Albo is losing it" },
     { max: 100, img: 5, caption: "Completely and utterly cooked", sub: "Albo has given up" },
   ];
   const level = levels.find(l => score <= l.max) || levels[4];
-
-  // Animate transition: start from fine (1), step through each level
   const targetImg = level.img;
+
+  // Morph: crossfade through each level with overlapping opacity
   let current = 1;
+  const allImgs = [1,2,3,4,5].map(i => document.getElementById('albo-' + i));
 
-  function stepTransition() {
-    // Hide all
-    for (let i = 1; i <= 5; i++) {
-      const el = document.getElementById('albo-' + i);
-      if (el) { el.classList.remove('active'); el.classList.add('behind'); }
-    }
-    // Show current
-    const el = document.getElementById('albo-' + current);
-    if (el) { el.classList.remove('behind'); el.classList.add('active'); }
+  // Reset all
+  allImgs.forEach(el => { if (el) { el.style.opacity = '0'; el.classList.remove('active','blend'); }});
+  if (allImgs[0]) { allImgs[0].style.opacity = '1'; allImgs[0].classList.add('active'); }
 
-    if (current < targetImg) {
-      current++;
-      setTimeout(stepTransition, 600);
-    } else {
-      // Final — update caption
+  function morphStep() {
+    if (current >= targetImg) {
+      // Final state — update caption
       document.getElementById('albo-caption-text').textContent = level.caption;
       document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
+      return;
     }
+
+    const from = allImgs[current - 1];
+    const to = allImgs[current];
+    if (!from || !to) return;
+
+    // Blend: fade in the next image while fading out the current
+    // CSS transition handles the smoothness (1.5s ease-in-out)
+    to.style.opacity = '1';
+    from.style.opacity = '0';
+
+    current++;
+    setTimeout(morphStep, 1000);
   }
 
-  // Start the transition after a short delay
-  setTimeout(stepTransition, 800);
+  setTimeout(morphStep, 800);
 }
 
 function updateScoresFromAPI(factors) {
