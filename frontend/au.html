@@ -295,14 +295,7 @@
     display: block;
     width: 100%;
     height: auto;
-    position: absolute;
-    top: 0; left: 0;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
   }
-  .albo-hero img:first-of-type { position: relative; } /* first img sets height */
-  .albo-hero img.active { opacity: 1; }
-  .albo-hero img.blend { opacity: 0.5; } /* mid-transition blend */
   .albo-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -668,11 +661,7 @@
 
       <!-- Albo mood indicator -->
       <div class="albo-hero" id="albo-hero">
-        <img src="/images/1_fine.png" id="albo-1" class="active" alt="Fine">
-        <img src="/images/2_tense.png" id="albo-2" class="behind" alt="Tense">
-        <img src="/images/3_notgreat.png" id="albo-3" class="behind" alt="Not great">
-        <img src="/images/4_fucked.png" id="albo-4" class="behind" alt="Fucked">
-        <img src="/images/5_cooked.png" id="albo-5" class="behind" alt="Cooked">
+        <img src="/images/1_fine.png" id="albo-gif" alt="Albo's mood">
         <div class="albo-caption">
           <div class="albo-caption-text" id="albo-caption-text">Loading...</div>
           <div class="albo-caption-sub mono" id="albo-caption-sub">based on live chaos index</div>
@@ -1376,45 +1365,22 @@ const SEVERITY_WEIGHTS = {
 
 function updateAlbo(score) {
   const levels = [
-    { max: 20, img: 1, caption: "She'll be right, mate", sub: "Albo is calm" },
-    { max: 40, img: 2, caption: "Things are getting a bit tense", sub: "Albo is concerned" },
-    { max: 60, img: 3, caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
-    { max: 80, img: 4, caption: "We're properly fucked here", sub: "Albo is losing it" },
-    { max: 100, img: 5, caption: "Completely and utterly cooked", sub: "Albo has given up" },
+    { max: 20, gif: null, caption: "She'll be right, mate", sub: "Albo is calm" },
+    { max: 40, gif: '/images/gifs/morph_1_2.gif', caption: "Things are getting a bit tense", sub: "Albo is concerned" },
+    { max: 60, gif: '/images/gifs/morph_1_3.gif', caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
+    { max: 80, gif: '/images/gifs/morph_1_4.gif', caption: "We're properly fucked here", sub: "Albo is losing it" },
+    { max: 100, gif: '/images/gifs/morph_1_5.gif', caption: "Completely and utterly cooked", sub: "Albo has given up" },
   ];
   const level = levels.find(l => score <= l.max) || levels[4];
-  const targetImg = level.img;
+  const img = document.getElementById('albo-gif');
 
-  // Morph: crossfade through each level with overlapping opacity
-  let current = 1;
-  const allImgs = [1,2,3,4,5].map(i => document.getElementById('albo-' + i));
-
-  // Reset all
-  allImgs.forEach(el => { if (el) { el.style.opacity = '0'; el.classList.remove('active','blend'); }});
-  if (allImgs[0]) { allImgs[0].style.opacity = '1'; allImgs[0].classList.add('active'); }
-
-  function morphStep() {
-    if (current >= targetImg) {
-      // Final state — update caption
-      document.getElementById('albo-caption-text').textContent = level.caption;
-      document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
-      return;
-    }
-
-    const from = allImgs[current - 1];
-    const to = allImgs[current];
-    if (!from || !to) return;
-
-    // Blend: fade in the next image while fading out the current
-    // CSS transition handles the smoothness (1.5s ease-in-out)
-    to.style.opacity = '1';
-    from.style.opacity = '0';
-
-    current++;
-    setTimeout(morphStep, 1000);
+  if (level.gif) {
+    // Add cache-buster so the GIF replays from the start
+    img.src = level.gif + '?t=' + Date.now();
   }
 
-  setTimeout(morphStep, 800);
+  document.getElementById('albo-caption-text').textContent = level.caption;
+  document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
 }
 
 function updateScoresFromAPI(factors) {
