@@ -816,17 +816,9 @@
         <div class="sidebar-card">
           <div class="sidebar-header">
             <div class="live-dot" style="width:6px;height:6px"></div>
-            <span class="mono" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">AU signals</span>
+            <span class="mono" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Latest News</span>
           </div>
-          <div id="sidebar-signals"></div>
-          <!-- Sidebar news -->
-          <div id="sidebar-news-section" style="display:none">
-            <div class="sidebar-header" style="margin-top:8px">
-              <span style="font-size:14px">📰</span>
-              <span class="mono" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted)">Top news</span>
-            </div>
-            <div id="sidebar-news"></div>
-          </div>
+          <div id="sidebar-news"></div>
         </div>
       </div>
     </div>
@@ -1116,27 +1108,7 @@ function renderSignalCards(signals, containerId, limit) {
   });
 }
 
-function renderSidebarSignals(signals) {
-  const container = document.getElementById('sidebar-signals');
-  if (!container) return;
-  container.innerHTML = '';
-  signals.slice(0, 12).forEach(sig => {
-    const cat = getCategoryFromSignal(sig);
-    const src = getSourceFromSignal(sig);
-    const el = document.createElement('div');
-    el.className = 'sidebar-signal';
-    el.innerHTML = `
-      <span class="sidebar-signal-text">${sig.url ? `<a href="${sig.url}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:none;border-bottom:1px dotted var(--dim)">${sig.text}</a>` : sig.text}</span>
-      <div class="sidebar-signal-meta">
-        <span class="badge badge-source mono">${src}</span>
-        <span class="badge badge-cat-${cat} mono">${cat}</span>
-      </div>`;
-    container.appendChild(el);
-  });
-}
-
-renderSignalCards(DATA.signals, 'signals-main', 8);
-renderSidebarSignals(DATA.signals);
+// Sidebar now shows cached news (rendered by renderSidebarNews below)
 
 // -- POLL SYSTEM --
 function mergeToBuckets(dist) {
@@ -1356,9 +1328,8 @@ function renderSidebarNews(factors) {
 
   if (top.length === 0) return;
 
-  const section = document.getElementById('sidebar-news-section');
   const container = document.getElementById('sidebar-news');
-  section.style.display = '';
+  if (!container) return;
   container.innerHTML = '';
 
   top.forEach(art => {
