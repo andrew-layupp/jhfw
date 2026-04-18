@@ -307,7 +307,9 @@
     justify-content: center;
   }
   @media (max-width: 768px) {
-    .hero-row { flex-direction: column-reverse; gap: 12px; }
+    .hero-row { flex-direction: column; gap: 12px; }
+    .albo-desktop { display: none; }
+    .albo-mobile { display: block; }
   }
   .albo-hero {
     position: relative;
@@ -321,6 +323,7 @@
   @media (max-width: 768px) {
     .albo-hero { width: 100%; max-width: 320px; }
   }
+  .albo-mobile { display: none; }
   .albo-hero img {
     display: block;
     width: 100%;
@@ -459,6 +462,11 @@
   .sub-card-source a:hover { color: var(--muted); }
 
   /* Dimension voting */
+  .sub-card svg { animation: dim-pulse 3s ease-in-out infinite; }
+  @keyframes dim-pulse {
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(255,51,51,0.1)); }
+    50% { filter: drop-shadow(0 0 10px rgba(255,51,51,0.3)); }
+  }
   .dim-vote { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
   .dim-vote-label { font-size: 9px; color: var(--dim); margin-bottom: 4px; }
   .dim-vote-buttons { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
@@ -721,12 +729,12 @@
         </p>
       </div>
 
-      <!-- Albo + Score side by side -->
+      <!-- Score gauge -->
       <div class="hero-row">
-        <!-- Albo GIF -->
-        <div class="albo-hero" id="albo-hero">
+        <!-- Albo GIF (desktop only here, mobile shows after poll) -->
+        <div class="albo-hero albo-desktop" id="albo-hero">
           <img src="/images/albo_cooked.gif" id="albo-gif" alt="Albo's mood">
-          </div>
+        </div>
 
         <!-- Main gauge -->
         <div class="gauge-wrap" style="margin:0">
@@ -745,8 +753,10 @@
           </defs>
           <path id="main-track" fill="none" stroke="#1a1a1a" stroke-width="24" stroke-linecap="round"/>
           <path id="main-prog" fill="none" stroke="url(#gauge-grad)" stroke-width="24" stroke-linecap="round" filter="url(#glow-r)"/>
-          <text id="main-num" x="150" y="156" text-anchor="middle" dominant-baseline="middle"
+          <text id="main-num" x="138" y="156" text-anchor="middle" dominant-baseline="middle"
             style="font-family:'IBM Plex Mono',monospace;font-size:72px;font-weight:700;fill:#ff3333">0</text>
+          <text id="main-decimal" x="195" y="145" text-anchor="start" dominant-baseline="middle"
+            style="font-family:'IBM Plex Mono',monospace;font-size:24px;font-weight:400;fill:#ff3333;opacity:0.6">.00</text>
         </svg>
 
         <div class="gauge-label-wrap">
@@ -791,6 +801,11 @@
           <div class="poll-inline-buttons" id="poll-inline-buttons"></div>
         </div>
         <div id="poll-results-area" style="display:none"></div>
+      </div>
+
+      <!-- Albo GIF (mobile only, after poll) -->
+      <div class="albo-hero albo-mobile" style="margin:16px auto">
+        <img src="/images/albo_cooked.gif" alt="Albo's mood">
       </div>
 
       <!-- Sub-indices -->
@@ -1112,11 +1127,11 @@ document.getElementById('sub-grid').addEventListener('click', function(e) {
   if (!btn) return;
   const dimId = btn.dataset.dim;
   const userScore = parseInt(btn.dataset.score, 10);
-  // Simple math: blend 1 user vote into ~200 seed votes
-  // newScore = (seedScore * 200 + userVote) / 201
+  // Same math as main poll: seedAvg * seedCount + userVote / (seedCount + 1)
   const cat = DATA.categories.find(c => c.id === dimId);
   const seedScore = cat ? cat.score : 50;
-  const blended = Math.round((seedScore * 200 + userScore) / 201);
+  const SEED_COUNT = 200;
+  const blended = Math.round((seedScore * SEED_COUNT + userScore) / (SEED_COUNT + 1));
   // Mark as voted so API update doesn't overwrite
   if (!window._dimVoted) window._dimVoted = {};
   window._dimVoted[dimId] = blended;
@@ -1202,7 +1217,7 @@ function computePollData(apiData) {
 
   const total = buckets.reduce((a, b) => a + b, 0);
   const weighted = buckets.reduce((sum, count, i) => sum + count * scores[i], 0);
-  const avg100 = total > 0 ? Math.round(weighted / total) : 0;
+  const avg100 = total > 0 ? weighted / total : 0;
 
   return { buckets, total, avg100 };
 }
@@ -1314,7 +1329,13 @@ function smoothTickCount(el, from, to, duration) {
 
 function updateMainScoreFromPoll(pd, animate) {
   if (pd.avg100 <= 0) return;
-  const newScore = Math.round(pd.avg100);
+  const exactScore = pd.avg100;
+  const newScore = Math.floor(exactScore);
+  const decimals = ((exactScore - newScore) * 100).toFixed(0).padStart(2, '0');
+
+  // Update decimal display
+  const decEl = document.getElementById('main-decimal');
+  if (decEl) decEl.textContent = '.' + decimals;
 
   // Smooth tick the vote count
   const countEl = document.getElementById('poll-count');
@@ -1322,6 +1343,15 @@ function updateMainScoreFromPoll(pd, animate) {
     smoothTickCount(countEl, lastPollTotal, pd.total, 800);
     countEl.classList.add('score-tick-up');
     setTimeout(() => countEl.classList.remove('score-tick-up'), 600);
+    // Roll the decimals randomly for 1 second to look alive
+    if (decEl) {
+      let rolls = 0;
+      const rollInterval = setInterval(() => {
+        decEl.textContent = '.' + String(Math.floor(Math.random() * 100)).padStart(2, '0');
+        rolls++;
+        if (rolls > 10) { clearInterval(rollInterval); decEl.textContent = '.' + decimals; }
+      }, 100);
+    }
   } else {
     countEl.textContent = pd.total.toLocaleString();
   }
@@ -1333,14 +1363,17 @@ function updateMainScoreFromPoll(pd, animate) {
     const mVerdict = document.getElementById('main-verdict');
     animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 200);
     if (animate) {
-      mNum.classList.add('score-tick-up');
-      setTimeout(() => mNum.classList.remove('score-tick-up'), 600);
+      // Big pulse on score change
+      const svg = document.getElementById('main-svg');
+      svg.style.transform = 'scale(1.08)';
+      svg.style.transition = 'transform 0.3s ease';
+      setTimeout(() => { svg.style.transform = ''; }, 300);
     }
     currentScore = newScore;
   }
 
   lastPollTotal = pd.total;
-  lastPollAvg = pd.avg100;
+  lastPollAvg = exactScore;
 }
 
 // Make scores pulsate to look live
