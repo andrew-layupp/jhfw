@@ -280,6 +280,47 @@
   }
 
   /* Hero */
+  /* Albo mood hero */
+  .albo-hero {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 20px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  .albo-hero img {
+    display: block;
+    width: 100%;
+    height: auto;
+    position: absolute;
+    top: 0; left: 0;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .albo-hero img.active { opacity: 1; position: relative; }
+  .albo-hero img.behind { opacity: 0; }
+  .albo-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 20px 16px 14px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    text-align: center;
+  }
+  .albo-caption-text {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  }
+  .albo-caption-sub {
+    font-size: 10px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+  }
+
   .hero { text-align: center; margin-bottom: 6px; }
   .site-title {
     font-size: clamp(42px, 8vw, 88px);
@@ -624,6 +665,19 @@
     <!-- Main content column -->
     <div class="main-col">
 
+      <!-- Albo mood indicator -->
+      <div class="albo-hero" id="albo-hero">
+        <img src="/images/1_fine.png" id="albo-1" class="active" alt="Fine">
+        <img src="/images/2_tense.png" id="albo-2" class="behind" alt="Tense">
+        <img src="/images/3_notgreat.png" id="albo-3" class="behind" alt="Not great">
+        <img src="/images/4_fucked.png" id="albo-4" class="behind" alt="Fucked">
+        <img src="/images/5_cooked.png" id="albo-5" class="behind" alt="Cooked">
+        <div class="albo-caption">
+          <div class="albo-caption-text" id="albo-caption-text">Loading...</div>
+          <div class="albo-caption-sub mono" id="albo-caption-sub">based on live chaos index</div>
+        </div>
+      </div>
+
       <!-- Hero -->
       <div class="hero">
         <h1 class="bbn site-title">How Fucked Is Australia? &#127462;&#127482;</h1>
@@ -659,11 +713,6 @@
           <span class="score-emoji" id="score-emoji"></span>
           <div id="score-delta" class="score-delta mono" style="display:none"></div>
           <div id="live-analysis-indicator" style="display:none"></div>
-          <!-- Albo's mood -->
-          <div id="leader-face" style="margin-top:16px;text-align:center">
-            <div style="font-size:64px;line-height:1" id="leader-emoji">😐</div>
-            <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px" id="leader-caption">Albo is thinking...</div>
-          </div>
         </div>
       </div>
 
@@ -914,16 +963,6 @@ function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
           currentScore = score;
           updateOGMeta(score);
           // Update Albo's mood
-          const alboMoods = [
-            { min: 0,  emoji: '😄', caption: "Albo is vibing — she'll be right" },
-            { min: 21, emoji: '😐', caption: "Albo is concerned but holding it together" },
-            { min: 41, emoji: '😰', caption: "Albo is sweating through question time" },
-            { min: 61, emoji: '😫', caption: "Albo is having a very bad day" },
-            { min: 76, emoji: '🤯', caption: "Albo has lost the plot completely" },
-          ];
-          const mood = [...alboMoods].reverse().find(m => score >= m.min);
-          document.getElementById('leader-emoji').textContent = mood.emoji;
-          document.getElementById('leader-caption').textContent = mood.caption;
         }
       }
       if (p < 1) requestAnimationFrame(frame);
@@ -1363,6 +1402,45 @@ const SEVERITY_WEIGHTS = {
   markets: 0.05,
 };
 
+function updateAlbo(score) {
+  // Determine which Albo to show: 1=fine, 2=tense, 3=notgreat, 4=fucked, 5=cooked
+  const levels = [
+    { max: 20, img: 1, caption: "She'll be right, mate", sub: "Albo is calm" },
+    { max: 40, img: 2, caption: "Things are getting a bit tense", sub: "Albo is concerned" },
+    { max: 60, img: 3, caption: "Yeah nah, this isn't great", sub: "Albo is stressed" },
+    { max: 80, img: 4, caption: "We're properly cooked here", sub: "Albo is losing it" },
+    { max: 100, img: 5, caption: "Completely and utterly cooked", sub: "Albo has given up" },
+  ];
+  const level = levels.find(l => score <= l.max) || levels[4];
+
+  // Animate transition: start from fine (1), step through each level
+  const targetImg = level.img;
+  let current = 1;
+
+  function stepTransition() {
+    // Hide all
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('albo-' + i);
+      if (el) { el.classList.remove('active'); el.classList.add('behind'); }
+    }
+    // Show current
+    const el = document.getElementById('albo-' + current);
+    if (el) { el.classList.remove('behind'); el.classList.add('active'); }
+
+    if (current < targetImg) {
+      current++;
+      setTimeout(stepTransition, 600);
+    } else {
+      // Final — update caption
+      document.getElementById('albo-caption-text').textContent = level.caption;
+      document.getElementById('albo-caption-sub').textContent = `Score: ${Math.round(score)}/100 — ${level.sub}`;
+    }
+  }
+
+  // Start the transition after a short delay
+  setTimeout(stepTransition, 800);
+}
+
 function updateScoresFromAPI(factors) {
   const severityMap = {};
   factors.forEach(f => {
@@ -1432,6 +1510,9 @@ function updateScoresFromAPI(factors) {
 
     // Re-animate the main gauge
     animateVal(newOverall, newOverall, 150, 150, 114, mNum, mProg, mVerdict, 200);
+
+    // Update Albo's expression
+    updateAlbo(newOverall);
 
     // Show "Powered by live news analysis" indicator
     const indicator = document.getElementById('live-analysis-indicator');
