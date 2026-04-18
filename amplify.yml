@@ -7,6 +7,7 @@ frontend:
     build:
       commands:
         - cp frontend/*.html build/
+        - cp -r frontend/images build/ 2>/dev/null || true
         - |
           if [ -n "$BACKEND_URL" ]; then
             echo "Injecting BACKEND_URL: $BACKEND_URL"
