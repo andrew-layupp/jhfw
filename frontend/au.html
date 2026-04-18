@@ -758,7 +758,7 @@
 
       <!-- Share section -->
       <div class="share-section fade-in-section" id="share-section">
-        <h3 class="mono">Spread the word</h3>
+        <h3 class="mono">Want a laugh? Share how fucked we are</h3>
         <div class="share-buttons">
           <button class="share-btn twitter" onclick="shareTwitter()">
             <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
@@ -865,20 +865,18 @@ const DATA = {
 };
 
 function getColor(s) {
-  if (s >= 82) return '#ff3333';
-  if (s >= 70) return '#e03a2a';
-  if (s >= 58) return '#ff8c00';
-  if (s >= 42) return '#e6c619';
-  if (s >= 25) return '#00cc66';
-  return '#00b386';
+  if (s >= 80) return '#8b1a1a';   // cooked — dark red
+  if (s >= 60) return '#ff3333';   // fucked — red
+  if (s >= 40) return '#ff8c00';   // gone to shit — orange
+  if (s >= 20) return '#7ab800';   // bit dodge — yellow-green
+  return '#00b386';                // she'll be right — teal
 }
 
 function getLabel(s) {
-  if (s >= 89) return 'COOKED';
-  if (s >= 76) return 'FUCKED';
-  if (s >= 61) return 'GONE TO SHIT';
-  if (s >= 41) return 'GONE TO SHIT';
-  if (s >= 21) return 'BIT DODGE';
+  if (s >= 80) return 'COOKED';
+  if (s >= 60) return 'FUCKED';
+  if (s >= 40) return 'GONE TO SHIT';
+  if (s >= 20) return 'BIT DODGE';
   return "SHE'LL BE RIGHT";
 }
 
@@ -1048,29 +1046,7 @@ DATA.categories.forEach((cat, i) => {
     null, 600 + i * 130);
 });
 
-// -- Methodology section --
-const methCard = document.getElementById('methodology-card');
-const METHODOLOGY = [
-  { name: 'Housing Crisis', weight: 25, color: '#ff8c00', source: 'ABS, SQM Research, realestate.com.au' },
-  { name: 'Cost of Living', weight: 20, color: '#e6c619', source: 'ABS CPI, RBA cash rate, utilities data' },
-  { name: 'Jobs & Wages', weight: 15, color: '#7ab800', source: 'ABS labour force, wage price index' },
-  { name: 'AI Taking Jobs', weight: 15, color: '#a855f7', source: 'AI disruption tracking, news analysis' },
-  { name: 'Climate', weight: 10, color: '#00b386', source: 'BOM temperature & event data' },
-  { name: 'Geopolitical', weight: 10, color: '#ff3333', source: 'GDELT events, DFAT, defence data' },
-  { name: 'Markets', weight: 5, color: '#888', source: 'ASX 200, AUD/USD, iron ore via yfinance' },
-];
-METHODOLOGY.forEach(m => {
-  const row = document.createElement('div');
-  row.className = 'methodology-row';
-  row.innerHTML = `
-    <div class="methodology-name mono">${m.name}</div>
-    <div class="methodology-weight-wrap">
-      <div class="methodology-weight-bar" style="width:${m.weight * 3.5}px;background:${m.color}"></div>
-      <span class="methodology-weight-pct mono">${m.weight}%</span>
-    </div>
-    <div class="methodology-source mono">${m.source}</div>`;
-  methCard.appendChild(row);
-});
+// Methodology section removed from page
 
 // -- Render signals --
 function getCategoryFromSignal(sig) {
@@ -1470,30 +1446,10 @@ function updateScoresFromAPI(factors) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const factors = await res.json();
 
-    // Update refreshed timestamp from first factor
-    const refreshedEl = document.getElementById('news-refreshed');
-    const firstUpdated = factors.find(f => f.updated_at)?.updated_at;
-    if (firstUpdated) {
-      refreshedEl.innerHTML = `<div class="live-dot"></div><span>Last refreshed: ${timeAgo(firstUpdated)}</span>`;
-    } else {
-      refreshedEl.innerHTML = `<div class="live-dot"></div><span>Live</span>`;
-    }
-
-    renderNewsFactors(factors);
     renderSidebarNews(factors);
-
-    // Update scores from API severity data
     updateScoresFromAPI(factors);
-
-    // Re-observe for fade-in
-    const newsSection = document.getElementById('news-section');
-    if (newsSection) observer.observe(newsSection);
   } catch (e) {
     console.warn('News fetch failed:', e.message);
-    document.getElementById('news-factors').innerHTML =
-      '<div class="news-loading mono" style="color:var(--dim)">News unavailable — check back later</div>';
-    document.getElementById('news-refreshed').innerHTML = '';
-    // Fallback: hardcoded scores remain as-is
   }
 })();
 </script>
