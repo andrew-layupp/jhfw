@@ -880,7 +880,7 @@ const SITE_URL    = 'https://howfuckedarewe.help';
 const SEED_VOTES_5 = { 20: 85, 40: 180, 60: 340, 80: 450, 100: 368 };
 const SEED_TOTAL = Object.values(SEED_VOTES_5).reduce((a, b) => a + b, 0);
 
-let currentScore = 72;
+let currentScore = -1; // will animate on first poll fetch
 let userVoteScore = null;
 
 // 5-bucket config
@@ -1081,7 +1081,7 @@ const mProg  = document.getElementById('main-prog');
 const mNum   = document.getElementById('main-num');
 const mVerdict = document.getElementById('main-verdict');
 mTrack.setAttribute('d', arcD(150, 150, 114, 225, 270));
-animateVal(DATA.overall, DATA.overall, 150, 150, 114, mNum, mProg, mVerdict, 400);
+// Initial gauge animation handled by first poll fetch below
 
 // Sub-cards
 const grid = document.getElementById('sub-grid');
@@ -1260,12 +1260,12 @@ function showPollResults(data) {
       <div class="poll-results-bars">${barsHtml}</div>
     </div>`;
 
-  // Bring back vote buttons after 5 seconds
+  // Bring back vote buttons after 2.5 seconds
   setTimeout(() => {
     document.getElementById('poll-vote-area').style.display = '';
     resultsArea.style.display = 'none';
     pollBtnsWrap.querySelectorAll('.poll-inline-btn').forEach(b => { b.disabled = false; b.style.opacity = '1'; });
-  }, 5000);
+  }, 2500);
 
   document.getElementById('poll-count').textContent = pd.total.toLocaleString();
 
@@ -1359,8 +1359,8 @@ function updateMainScoreFromPoll(pd, animate) {
     countEl.textContent = pd.total.toLocaleString();
   }
 
-  // Only re-animate if score actually changed AND it's not the first load
-  if (newScore !== currentScore && animate) {
+  // Animate if score changed
+  if (newScore !== currentScore) {
     const mNum = document.getElementById('main-num');
     const mProg = document.getElementById('main-prog');
     const mVerdict = document.getElementById('main-verdict');
