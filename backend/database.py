@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS poll_votes (
     id        INTEGER PRIMARY KEY AUTOINCREMENT,
     ts        TEXT NOT NULL,
     score     INTEGER NOT NULL,
-    ip_hash   TEXT
+    ip_hash   TEXT,
+    country   TEXT NOT NULL DEFAULT 'au'
 );
 
 CREATE INDEX IF NOT EXISTS idx_snapshots_ts ON snapshots(ts);
@@ -147,21 +148,24 @@ async def count_snapshots() -> int:
     return row[0] if row else 0
 
 
-async def insert_poll_vote(score: int, ip_hash: str = None):
+async def insert_poll_vote(score: int, ip_hash: str = None, country: str = "au"):
     """Insert a user poll vote (score 1-10)."""
     ts = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S")
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT INTO poll_votes (ts, score, ip_hash) VALUES (?, ?, ?)",
-            (ts, score, ip_hash),
+            "INSERT INTO poll_votes (ts, score, ip_hash, country) VALUES (?, ?, ?, ?)",
+            (ts, score, ip_hash, country),
         )
         await db.commit()
 
 
-async def get_poll_results() -> dict:
-    """Return aggregate poll results: total votes, average, and distribution."""
+async def get_poll_results(country: str = "au") -> dict:
+    """Return aggregate poll results for a specific country."""
     async with aiosqlite.connect(DB_PATH) as db:
-        async with db.execute("SELECT score, COUNT(*) as cnt FROM poll_votes GROUP BY score") as cur:
+        async with db.execute(
+            "SELECT score, COUNT(*) as cnt FROM poll_votes WHERE country = ? GROUP BY score",
+            (country,),
+        ) as cur:
             rows = await cur.fetchall()
     distribution = {i: 0 for i in range(1, 11)}
     total = 0

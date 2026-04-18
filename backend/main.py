@@ -100,6 +100,7 @@ async def history(days: int = Query(default=180, ge=7, le=730)):
 
 class PollVote(BaseModel):
     score: int = Field(..., ge=1, le=10)
+    country: str = Field(default="au")
 
 
 @app.post("/api/poll")
@@ -108,13 +109,15 @@ async def submit_poll(vote: PollVote, request: Request):
     if request.client:
         import hashlib
         ip_hash = hashlib.sha256(request.client.host.encode()).hexdigest()[:16]
-    await db.insert_poll_vote(vote.score, ip_hash)
+    country = vote.country.lower().strip() if vote.country in ("au", "us") else "au"
+    await db.insert_poll_vote(vote.score, ip_hash, country)
     return {"status": "ok"}
 
 
 @app.get("/api/poll")
-async def poll_results():
-    results = await db.get_poll_results()
+async def poll_results(country: str = Query(default="au")):
+    country = country.lower().strip() if country in ("au", "us") else "au"
+    results = await db.get_poll_results(country)
     return JSONResponse(results)
 
 

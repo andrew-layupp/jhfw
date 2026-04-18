@@ -879,6 +879,7 @@
 // -- Config --
 const BACKEND_URL = window.JHFW_BACKEND || 'https://g7rq7p0rzi.execute-api.ap-southeast-2.amazonaws.com';
 const SITE_URL    = 'https://howfuckedarewe.help';
+const COUNTRY     = 'au';
 
 // Seed votes (10-point scale)
 // Seed votes: not=20, slightly=40, properly=60, royally=80, absolutely=100
@@ -1286,7 +1287,7 @@ function showPollResults(data) {
 
 async function fetchPollResults() {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/poll`);
+    const res = await fetch(`${BACKEND_URL}/api/poll?country=${COUNTRY}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return await res.json();
   } catch (e) {
@@ -1305,7 +1306,7 @@ async function submitInlinePollVote(level) {
     await fetch(`${BACKEND_URL}/api/poll`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ score: backendScore }),
+      body: JSON.stringify({ score: backendScore, country: COUNTRY }),
     });
   } catch (e) {
     console.warn('Poll submit failed:', e.message);

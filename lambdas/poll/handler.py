@@ -31,13 +31,25 @@ def _get_table():
     return _dynamodb.Table(POLL_TABLE)
 
 
+def _get_country(event, from_body=False):
+    """Extract country code from query params or body. Defaults to 'au'."""
+    if from_body:
+        body = json.loads(event.get("body", "{}"))
+        country = body.get("country", "").lower().strip()
+        if country in ("au", "us"):
+            return country
+    qs = event.get("queryStringParameters") or {}
+    country = (qs.get("country") or "au").lower().strip()
+    return country if country in ("au", "us") else "au"
+
+
 def lambda_handler(event, context):
     method = event.get("requestContext", {}).get("http", {}).get("method", "GET")
 
     if method == "POST":
         return _submit_vote(event)
     else:
-        return _get_results()
+        return _get_results(event)
 
 
 def _submit_vote(event):
@@ -46,6 +58,8 @@ def _submit_vote(event):
         score = body.get("score")
         if not score or not isinstance(score, int) or score not in (1,2,3,4,5,6,7,8,9,10,20,40,60,80,100):
             return {"statusCode": 400, "headers": CORS_HEADERS, "body": json.dumps({"error": "invalid score"})}
+
+        country = _get_country(event, from_body=True)
 
         # Hash IP for dedup
         ip = event.get("requestContext", {}).get("http", {}).get("sourceIp", "unknown")
@@ -58,6 +72,7 @@ def _submit_vote(event):
             "ts": ts,
             "score": score,
             "ip_hash": ip_hash,
+            "country": country,
         })
 
         return {"statusCode": 200, "headers": CORS_HEADERS, "body": json.dumps({"status": "ok"})}
@@ -66,8 +81,9 @@ def _submit_vote(event):
         return {"statusCode": 500, "headers": CORS_HEADERS, "body": json.dumps({"error": str(e)})}
 
 
-def _get_results():
+def _get_results(event):
     try:
+        country = _get_country(event)
         table = _get_table()
         # Scan all votes
         items = []
@@ -80,10 +96,14 @@ def _get_results():
                 break
             kwargs["ExclusiveStartKey"] = last
 
-        # Count all votes — supports both old 1-10 and new 20/40/60/80/100 scale
+        # Count votes filtered by country
+        # Votes without a country field are treated as 'au' (legacy)
         distribution = {}
         total = 0
         for item in items:
+            item_country = item.get("country", "au")
+            if item_country != country:
+                continue
             s = int(item.get("score", 0))
             if s > 0:
                 distribution[str(s)] = distribution.get(str(s), 0) + 1
