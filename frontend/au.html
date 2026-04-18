@@ -147,9 +147,9 @@
 
   .page-header { margin-bottom: 28px; }
 
-  .layout { display: flex; gap: 28px; }
+  .layout { display: flex; gap: 28px; align-items: stretch; }
   .main-col { flex: 1; min-width: 0; }
-  .sidebar-col { width: 340px; flex-shrink: 0; min-height: 100%; }
+  .sidebar-col { width: 340px; flex-shrink: 0; }
   .sidebar-inner { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 0; scrollbar-gutter: stable; }
   .sidebar-inner::-webkit-scrollbar { width: 4px; }
   .sidebar-inner::-webkit-scrollbar-track { background: transparent; }
@@ -662,7 +662,7 @@
     <div class="header">
       <div class="live-badge">
         <div class="live-dot"></div>
-        <span class="mono" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em">Live</span>
+        <span class="mono" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em" id="live-analysis-indicator">Live</span>
       </div>
       <span class="mono" id="timestamp" style="font-size:11px;color:var(--muted)"></span>
     </div>
@@ -711,9 +711,7 @@
         <div class="gauge-label-wrap">
           <div class="bbn gauge-verdict" id="main-verdict" style="color:#ff3333">CALCULATING...</div>
           <div class="mono" style="font-size:11px;color:var(--muted);margin-top:4px">out of 100</div>
-          <span class="score-emoji" id="score-emoji"></span>
           <div id="score-delta" class="score-delta mono" style="display:none"></div>
-          <div id="live-analysis-indicator" style="display:none"></div>
         </div>
       </div>
       </div><!-- end hero-row -->
@@ -1202,9 +1200,7 @@ async function submitInlinePollVote(level) {
   const pd = computePollData(data);
   document.getElementById('poll-count').textContent = pd.total.toLocaleString();
 
-  if (sessionStorage.getItem('jhfw_voted')) {
-    showPollResults(data);
-  }
+  // Always show vote buttons on refresh — let people vote each visit
 })();
 
 // -- NEWS SECTION --
@@ -1313,11 +1309,13 @@ function renderSidebarNews(factors) {
     const icon = factorIcons[art.factorId] || '📋';
     const el = document.createElement('div');
     el.className = 'sidebar-news-article';
+    const factorColors = { housing:'#ff8c00', cost_of_living:'#e6c619', jobs:'#7ab800', ai_jobs:'#a855f7', climate:'#00b386', geopolitical:'#ff3333', markets:'#00cc66' };
+    const catColor = factorColors[art.factorId] || '#888';
     el.innerHTML = `
       <span class="sidebar-news-headline"><span style="margin-right:6px">${icon}</span>${art.url ? `<a href="${art.url}" target="_blank" rel="noopener">${art.headline}</a>` : art.headline}</span>
       <div class="sidebar-signal-meta">
+        <span class="badge mono" style="background:${catColor}22;color:${catColor};border:1px solid ${catColor}44">${art.factorLabel}</span>
         ${art.source ? `<span class="badge badge-source mono">${art.source}</span>` : ''}
-        <span class="badge ${rel.cls} mono">${rel.label}</span>
       </div>`;
     container.appendChild(el);
   });
@@ -1442,11 +1440,10 @@ function updateScoresFromAPI(factors) {
     // Update Albo's expression
     updateAlbo(newOverall);
 
-    // Show "Powered by live news analysis" indicator
+    // Update header to show live data status
     const indicator = document.getElementById('live-analysis-indicator');
     if (indicator) {
-      indicator.style.display = '';
-      indicator.innerHTML = '<span class="live-analysis-badge mono"><span class="pulse-dot"></span> Powered by live news analysis</span>';
+      indicator.textContent = 'Live data and news analysis';
     }
   }
 }
