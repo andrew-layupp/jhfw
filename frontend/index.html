@@ -680,7 +680,7 @@
       <div class="hero">
         <h1 class="bbn site-title">How fucked are we? &#127462;&#127482;</h1>
         <p class="mono tagline">
-          The real-time fucked index for Australia.
+          The real-time fucked index for Australia, as scored by you, the Australian public.
         </p>
       </div>
 
@@ -744,7 +744,6 @@
         </div>
       </div>
 
-      <div class="mono" style="text-align:center;font-size:11px;color:var(--dim);margin:-20px 0 20px">Based on housing, cost of living, jobs, AI, climate, geopolitics & markets</div>
 
       <!-- Inline poll -->
       <div class="poll-inline fade-in-section" id="poll-section">
@@ -759,7 +758,7 @@
 
       <!-- Sub-indices -->
       <div class="fade-in-section">
-        <div class="section-label mono">By dimension</div>
+        <div class="section-label mono">Dimension</div>
         <div class="sub-grid" id="sub-grid"></div>
       </div>
 
@@ -1196,15 +1195,29 @@ async function submitInlinePollVote(level) {
 
   const data = await fetchPollResults();
   showPollResults(data);
+
+  // Update the main score to reflect the community vote
+  const pd = computePollData(data);
+  updateMainScoreFromPoll(pd);
 }
 
-// On load: update count, check if already voted
+function updateMainScoreFromPoll(pd) {
+  if (pd.avg100 <= 0) return;
+  const newScore = Math.round(pd.avg100);
+  const mNum = document.getElementById('main-num');
+  const mProg = document.getElementById('main-prog');
+  const mVerdict = document.getElementById('main-verdict');
+  animateVal(newScore, newScore, 150, 150, 114, mNum, mProg, mVerdict, 200);
+  currentScore = newScore;
+  document.getElementById('poll-count').textContent = pd.total.toLocaleString();
+}
+
+// On load: update count and main score from poll
 (async () => {
   const data = await fetchPollResults();
   const pd = computePollData(data);
   document.getElementById('poll-count').textContent = pd.total.toLocaleString();
-
-  // Always show vote buttons on refresh — let people vote each visit
+  updateMainScoreFromPoll(pd);
 })();
 
 // -- NEWS SECTION --
