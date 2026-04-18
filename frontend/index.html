@@ -1054,12 +1054,9 @@ DATA.categories.forEach((cat, i) => {
   const DIM_VOTE_COLORS = ['#00b386','#7ab800','#ff8c00','#ff3333','#8b1a1a'];
   const DIM_VOTE_LABELS = ['Not','Slightly','Properly','Royally','Absolutely'];
   const DIM_VOTE_SCORES = [10, 30, 50, 70, 90];
-  const existingVote = localStorage.getItem('jhfw_dim_' + cat.id);
-  const dimBtnsHtml = existingVote
-    ? `<div class="dim-voted mono">Voted!</div>`
-    : DIM_VOTE_LABELS.map((lbl, vi) =>
-        `<button class="dim-vote-btn" data-dim="${cat.id}" data-score="${DIM_VOTE_SCORES[vi]}" style="border-color:${DIM_VOTE_COLORS[vi]}44;color:${DIM_VOTE_COLORS[vi]}">${lbl}</button>`
-      ).join('');
+  const dimBtnsHtml = DIM_VOTE_LABELS.map((lbl, vi) =>
+      `<button class="dim-vote-btn" data-dim="${cat.id}" data-score="${DIM_VOTE_SCORES[vi]}" style="border-color:${DIM_VOTE_COLORS[vi]}44;color:${DIM_VOTE_COLORS[vi]}">${lbl}</button>`
+    ).join('');
   card.innerHTML = `
     <svg width="110" height="86" viewBox="0 0 110 110" preserveAspectRatio="xMidYMin slice" style="display:block;margin:0 auto">
       <path d="${arcD(55,55,37,225,270)}" fill="none" stroke="#1a1a1a" stroke-width="10" stroke-linecap="round"/>
@@ -1077,11 +1074,7 @@ DATA.categories.forEach((cat, i) => {
       </div>
     </div>`;
   grid.appendChild(card);
-  // If user previously voted, blend their vote with seed (1 among ~200)
-  const savedDimScore = existingVote
-    ? Math.round((cat.score * 200 + parseInt(existingVote, 10)) / 201)
-    : cat.score;
-  animateVal(savedDimScore, savedDimScore, 55, 55, 37,
+  animateVal(cat.score, cat.score, 55, 55, 37,
     document.getElementById(`n-sc-${cat.id}`),
     document.getElementById(`p-sc-${cat.id}`),
     null, 600 + i * 130);
