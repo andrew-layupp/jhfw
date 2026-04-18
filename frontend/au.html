@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How fucked are we? &#127462;&#127482; — Chaos Index</title>
+<title>How fucked are we? — Fucked Index</title>
 <meta name="description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets. Updated regularly.">
 <link rel="canonical" href="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🇦🇺</text></svg>">
@@ -11,13 +11,13 @@
 <!-- Open Graph -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://main.d2gbtqpbsyrhy1.amplifyapp.com/au">
-<meta property="og:title" content="How fucked are we? &#127462;&#127482; — Chaos Index">
+<meta property="og:title" content="How fucked are we? — Fucked Index">
 <meta property="og:description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets.">
 <meta property="og:site_name" content="Just How Fucked Are We?">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="How fucked are we? &#127462;&#127482; — Chaos Index">
+<meta name="twitter:title" content="How fucked are we? — Fucked Index">
 <meta name="twitter:description" content="Real-time composite chaos score for Australia across housing, cost of living, jobs, climate, geopolitics & markets.">
 
 <!-- JSON-LD Structured Data -->
@@ -682,7 +682,7 @@
       <div class="hero">
         <h1 class="bbn site-title">How fucked are we? &#127462;&#127482;</h1>
         <p class="mono tagline">
-          Real-time fucked index for Australia. Housing, cost of living, jobs, climate & more.
+          The real-time fucked index for Australia.
         </p>
       </div>
 
@@ -956,7 +956,7 @@ function animateVal(target, score, cx, cy, r, numEl, progEl, verdictEl, delay) {
 
 // -- Share functions --
 function getShareText(score) {
-  return `Australia is currently ${score || currentScore}/100 fucked. See the live chaos index:`;
+  return `Australia is currently ${score || currentScore}/100 fucked. See the live fucked index:`;
 }
 
 function shareTwitter(customText) {
@@ -999,7 +999,7 @@ function copyLink() {
 }
 
 function updateOGMeta(score) {
-  const desc = `Australia chaos index: ${score}/100. Housing, cost of living, jobs, climate, geopolitics & markets.`;
+  const desc = `Australia fucked index: ${score}/100. Housing, cost of living, jobs, climate, geopolitics & markets.`;
   document.querySelector('meta[property="og:description"]')?.setAttribute('content', desc);
   document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', desc);
 }
