@@ -307,7 +307,7 @@
     justify-content: center;
   }
   @media (max-width: 768px) {
-    .hero-row { flex-direction: column; gap: 12px; }
+    .hero-row { flex-direction: column-reverse; gap: 12px; }
   }
   .albo-hero {
     position: relative;
@@ -1601,17 +1601,9 @@ function updateScoresFromAPI(factors) {
     }
   });
 
+  // Main score comes from poll votes only — don't override here
+  // Just update the header indicator
   if (totalWeight > 0) {
-    const newOverall = Math.round(weightedSum / totalWeight);
-    DATA.overall = newOverall;
-
-    // Re-animate the main gauge
-    animateVal(newOverall, newOverall, 150, 150, 114, mNum, mProg, mVerdict, 200);
-
-    // Update Albo's expression
-    updateAlbo(newOverall);
-
-    // Update header to show live data status
     const indicator = document.getElementById('live-analysis-indicator');
     if (indicator) {
       indicator.textContent = 'Live data and news analysis';
